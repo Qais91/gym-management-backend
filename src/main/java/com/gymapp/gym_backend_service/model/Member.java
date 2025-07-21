@@ -4,15 +4,12 @@ import jakarta.persistence.*;
 import java.time.LocalDate;
 
 @Entity
-public class Member {
+@DiscriminatorValue("MEMBER")
+public class Member extends User {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @ManyToOne
+    @JoinColumn(name = "personal_trainer_id")
+    private Trainer personalTrainer;
 
-    private String name;
-    private String phone;
-    private LocalDate joinDate = LocalDate.now();
-
-    // Getters and setters
+    private boolean isValid;// Getters and setters
 }

@@ -3,12 +3,10 @@ package com.gymapp.gym_backend_service.model;
 import jakarta.persistence.*;
 
 @Entity
-public class Trainer {
+@DiscriminatorValue("TRAINER")
+public class Trainer extends User {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    private String name;
+    private int experience;
     private String specialization;
-    private int experienceInYears;
+    private double ratings;
 }

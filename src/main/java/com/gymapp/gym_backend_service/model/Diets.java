@@ -2,6 +2,7 @@ package com.gymapp.gym_backend_service.model;
 
 import jakarta.persistence.*;
 
+@Entity
 public class Diets {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

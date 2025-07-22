@@ -3,6 +3,7 @@ package com.gymapp.gym_backend_service.model;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
+@Entity
 public class GymSession {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

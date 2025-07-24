@@ -20,5 +20,24 @@ public class RegisteredMemberships {
 
     private LocalDate startDate;
     private LocalDate endDate;
-    private String status;
+    private boolean isActive;
+
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public Member getCustomer() { return member; }
+    public void setCustomer(Member customer) { this.member = customer; }
+
+    public Membership getMembership() { return membership; }
+    public void setMembership(Membership membership) { this.membership = membership; }
+
+    public LocalDate getStartDate() { return startDate; }
+    public void setStartDate(LocalDate startDate) { this.startDate = startDate; }
+
+    public LocalDate getEndDate() { return endDate; }
+    public void setEndDate(LocalDate endDate) { this.endDate = endDate; }
+
+    public boolean isActive() { return isActive; }
+    public void setActive(boolean active) { isActive = active; }
+
 }

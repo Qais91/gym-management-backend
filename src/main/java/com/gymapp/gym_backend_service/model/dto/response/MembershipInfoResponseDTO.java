@@ -1,15 +1,15 @@
-package com.gymapp.gym_backend_service.model.dto;
+package com.gymapp.gym_backend_service.model.dto.response;
 
 import java.time.LocalDate;
 
-public class MembershipInfoDTO {
+public class MembershipInfoResponseDTO {
 
     private String planName;
     private LocalDate startDate;
     private LocalDate endDate;
     private boolean active;
 
-    public MembershipInfoDTO(String planName, LocalDate startDate, LocalDate endDate, boolean active) {
+    public MembershipInfoResponseDTO(String planName, LocalDate startDate, LocalDate endDate, boolean active) {
         this.planName = planName;
         this.startDate = startDate;
         this.endDate = endDate;

@@ -16,7 +16,9 @@ public class Membership {
     public void setId(Long id) { this.id = id; }
 
     public String getTitle() { return title; }
-    public void setTitle(String planName) { this.title = planName; }
+    public void setTitle(String title) { this.title = title; }
+
+    public void setPlanName(String planName) { this.title = planName; }
 
     public double getPrice() { return price; }
     public void setPrice(double price) { this.price = price; }

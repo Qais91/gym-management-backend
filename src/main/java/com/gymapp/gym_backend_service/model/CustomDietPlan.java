@@ -2,6 +2,8 @@ package com.gymapp.gym_backend_service.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 public class CustomDietPlan {
@@ -23,4 +25,15 @@ public class CustomDietPlan {
     @ManyToOne
     @JoinColumn(name = "trainer_id")
     private Trainer trainer;
+
+    @ManyToMany
+    @JoinTable(
+            name = "custom_diet_plan_diets",
+            joinColumns = @JoinColumn(name = "diet_plan_id"),
+            inverseJoinColumns = @JoinColumn(name = "diet_id")
+    )
+    private List<Diets> diets = new ArrayList<>();
+
+    public List<Diets> getDiets() { return diets; }
+    public void setDiets(List<Diets> asssignedDiet) { diets = asssignedDiet; }
 }

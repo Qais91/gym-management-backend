@@ -33,7 +33,15 @@ public class CustomDietPlan {
             inverseJoinColumns = @JoinColumn(name = "diet_id")
     )
     private List<Diets> diets = new ArrayList<>();
-
     public List<Diets> getDiets() { return diets; }
     public void setDiets(List<Diets> asssignedDiet) { diets = asssignedDiet; }
+
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public String getTitle() { return title; }
+    public void setTitle(String title) { this.title = title; }
+
+    public Member getMember() { return member; }
+    public void setMember(Member member) { this.member = member; }
 }

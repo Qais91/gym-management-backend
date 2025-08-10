@@ -1,5 +1,6 @@
 package com.gymapp.gym_backend_service.model;
 
+import com.gymapp.gym_backend_service.model.enums.UserRole;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 
@@ -12,6 +13,9 @@ public class User {
     private Long id;
     private String name;
     private String email;
+
+    @Enumerated(EnumType.STRING)
+    private UserRole userRole;
 
     @Column(name = "phone_number")
     private String phoneNumber;
@@ -30,6 +34,9 @@ public class User {
 
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
+
+    public UserRole getUserRole() { return userRole; }
+    public void setUserRole(UserRole userRole) { this.userRole = userRole; }
 
     public String getUsername() { return username; }
     public void setUsername(String username) { this.username = username; }

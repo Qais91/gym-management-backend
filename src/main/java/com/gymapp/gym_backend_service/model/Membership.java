@@ -9,8 +9,10 @@ public class Membership {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String title;
-    private int durationInMonths;
-    private double price;
+    private Integer durationInMonths;
+    private double discountOnExtraMonth;
+    private double pricePerDurationMonth;
+    private boolean dietsIncluded = false;
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -20,9 +22,15 @@ public class Membership {
 
     public void setPlanName(String planName) { this.title = planName; }
 
-    public double getPrice() { return price; }
-    public void setPrice(double price) { this.price = price; }
+    public double getDiscountOnExtraMonth() { return discountOnExtraMonth; }
+    public void setDiscountOnExtraMonth(double discount) { this.discountOnExtraMonth = discount; }
 
-    public int getDurationInMonths() { return durationInMonths; }
+    public double getPricePerDurationMonth() { return pricePerDurationMonth; }
+    public void setPricePerDurationMonth(double price) { this.pricePerDurationMonth = price; }
+
+    public Integer getDurationInMonths() { return durationInMonths; }
     public void setDurationInMonths(int durationInMonths) { this.durationInMonths = durationInMonths; }
+
+    public boolean getDietsIncluded() { return dietsIncluded; }
+    public  void setDietsIncluded(boolean dietsIncluded) { this.dietsIncluded = dietsIncluded; }
 }

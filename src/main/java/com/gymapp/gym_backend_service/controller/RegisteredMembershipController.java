@@ -6,7 +6,7 @@ import com.gymapp.gym_backend_service.model.RegisteredMemberships;
 import com.gymapp.gym_backend_service.repository.MemberRepository;
 import com.gymapp.gym_backend_service.repository.MembershipRepository;
 import com.gymapp.gym_backend_service.repository.RegisteredMembershipsRepository;
-import com.gymapp.gym_backend_service.model.dto.response.MembershipInfoResponseDTO;
+import com.gymapp.gym_backend_service.model.dto.response.RegisteredMembershipInfoResponseDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -56,8 +56,8 @@ public class RegisteredMembershipController {
             return ResponseEntity.status(404).body("No memberships found for customer ID: " + memberID);
         }
 
-        List<MembershipInfoResponseDTO> result = registrations.stream().map(reg ->
-                new MembershipInfoResponseDTO(
+        List<RegisteredMembershipInfoResponseDTO> result = registrations.stream().map(reg ->
+                new RegisteredMembershipInfoResponseDTO(
                         reg.getMembership().getTitle(),
                         reg.getStartDate(),
                         reg.getEndDate(),

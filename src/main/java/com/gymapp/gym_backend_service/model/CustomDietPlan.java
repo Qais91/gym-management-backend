@@ -34,7 +34,7 @@ public class CustomDietPlan {
     )
     private List<Diets> diets = new ArrayList<>();
     public List<Diets> getDiets() { return diets; }
-    public void setDiets(List<Diets> asssignedDiet) { diets = asssignedDiet; }
+    public void setDiets(List<Diets> assignedDiet) { diets = assignedDiet; }
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }

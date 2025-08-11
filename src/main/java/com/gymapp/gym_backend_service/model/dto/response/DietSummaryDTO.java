@@ -1,5 +1,7 @@
 package com.gymapp.gym_backend_service.model.dto.response;
 
+import com.gymapp.gym_backend_service.model.Diets;
+
 public class DietSummaryDTO {
 
     private Long id;

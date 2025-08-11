@@ -56,7 +56,7 @@ public class MemberController {
         List<User> members = userRepository.findByUserRole(UserRole.GymMemeber);
         if(members.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new ApiResponse("error", "No Members Added"));
+                    .body(new ApiResponse("error", "No Members"));
         }
         return ResponseEntity.ok(
                 members.stream()

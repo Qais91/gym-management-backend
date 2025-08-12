@@ -17,7 +17,7 @@ public class GymSessionRequest {
     private String notes;
 
     @NotNull(message = "Activity type is required")
-    private ActivityType activityType;
+    private String activityType;
 
     @NotNull(message = "Start time is required")
     @Future(message = "Start time must be in the future")
@@ -30,8 +30,8 @@ public class GymSessionRequest {
     public Long getTrainerId() { return trainerId; }
     public void setTrainer(Long trainerId) { this.trainerId = trainerId; }
 
-    public ActivityType getActivityType() { return activityType; }
-    public void setActivityType(ActivityType activityType) { this.activityType = activityType; }
+    public String getActivityType() { return activityType; }
+    public void setActivityType(String activityType) { this.activityType = activityType; }
 
     public String getNotes() { return notes; }
     public void setNotes(String notes) { this.notes = notes; }

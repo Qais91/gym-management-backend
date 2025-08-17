@@ -31,8 +31,8 @@ public class Membership {
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }
 
-    public double getPricePerDurationMonth() { return price; }
-    public void setPricePerDurationMonth(double price) { this.price = price; }
+    public double getPrice() { return price; }
+    public void setPrice(double price) { this.price = price; }
 
     public Integer getDurationInMonths() { return durationInMonths; }
     public void setDurationInMonths(int durationInMonths) { this.durationInMonths = durationInMonths; }

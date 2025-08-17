@@ -40,8 +40,8 @@ public class RegisteredMemberships {
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
-    public Member getCustomer () { return member; }
-    public void setCustomer(Member customer) { this.member = customer; }
+    public Member getMember() { return member; }
+    public void setMemeber(Member member) { this.member = member; }
 
     public Membership getMembership() { return membership; }
     public void setMembership(Membership membership) { this.membership = membership; }

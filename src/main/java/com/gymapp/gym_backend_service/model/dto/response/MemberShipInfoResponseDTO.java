@@ -11,7 +11,7 @@ public class MemberShipInfoResponseDTO {
     public MemberShipInfoResponseDTO(Membership membership) {
         membershipID = membership.getId();
         planName = membership.getTitle();
-        price = membership.getPricePerDurationMonth();
+        price = membership.getPrice();
         documentRequired = membership.getMedicalValidationRequired();
     }
 

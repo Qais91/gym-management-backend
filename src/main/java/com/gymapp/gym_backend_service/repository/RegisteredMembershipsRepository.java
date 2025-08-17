@@ -6,4 +6,5 @@ import java.util.List;
 
 public interface RegisteredMembershipsRepository extends JpaRepository<RegisteredMemberships, Long> {
     List<RegisteredMemberships> findByMemberId(Long memberId);
+    List<RegisteredMemberships> findByValidatorId(Long trainerId);
 }

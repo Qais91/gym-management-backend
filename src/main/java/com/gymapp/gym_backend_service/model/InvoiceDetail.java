@@ -1,5 +1,6 @@
 package com.gymapp.gym_backend_service.model;
 
+import com.gymapp.gym_backend_service.model.enums.PaymentStatus;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 
@@ -21,6 +22,23 @@ public class InvoiceDetail {
     @ManyToOne
     @JoinColumn(name = "registered_membership_id")
     private RegisteredMemberships registeredMembership;
+
+    @Enumerated(EnumType.STRING)
+    private PaymentStatus status = PaymentStatus.PENDING;
+
+    public InvoiceDetail() {}
+    public InvoiceDetail(RegisteredMemberships membershipReg) {
+        member = membershipReg.getMember();
+        amount = membershipReg.getMembership().getPrice();
+        description = String.format("Payment Breakdown:\nMemebership Fee: %f\n", membershipReg.getMembership().getPrice());
+        if (membershipReg.getDietPlan() != null) {
+            amount += membershipReg.getDietPlan().getDietsPrice();
+            description += String.format("Diets: %d", membershipReg.getDietPlan().getDietsPrice());
+        }
+        registeredMembership = membershipReg;
+        paymentDate = LocalDate.now();
+        paymentMode = "ONLINE";
+    }
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }

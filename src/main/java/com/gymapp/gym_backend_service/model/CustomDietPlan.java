@@ -19,12 +19,8 @@ public class CustomDietPlan {
     private String notes;
 
     @ManyToOne
-    @JoinColumn(name = "member_id")
-    private Member member;
-
-    @ManyToOne
     @JoinColumn(name = "trainer_id")
-    private Trainer trainer;
+    private Trainer createdBy;
 
     @ManyToMany
     @JoinTable(
@@ -33,8 +29,15 @@ public class CustomDietPlan {
             inverseJoinColumns = @JoinColumn(name = "diet_id")
     )
     private List<Diets> diets = new ArrayList<>();
+
     public List<Diets> getDiets() { return diets; }
     public void setDiets(List<Diets> assignedDiet) { diets = assignedDiet; }
+
+    public int getDietsPrice() {
+        return diets.stream()
+                .mapToInt(Diets::getPrice)
+                .sum();
+    }
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -42,6 +45,11 @@ public class CustomDietPlan {
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }
 
-    public Member getMember() { return member; }
-    public void setMember(Member member) { this.member = member; }
+    public void setNotes(String notes) { this.notes = notes; }
+    public String getNotes() { return notes; }
+
+    public void setCreatedBy(Trainer createdBy) { this.createdBy = createdBy; }
+    public Trainer getCreatedBy() { return createdBy; }
+
+    public LocalDate getCreatedDate() { return createdDate; }
 }

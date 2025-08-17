@@ -6,5 +6,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface CustomDietPlanRepository extends JpaRepository<CustomDietPlan, Long> {
-    List<CustomDietPlan> findByMemberId(Long memberId);
+    List<CustomDietPlan> findByCreatedById(Long trainerId);
 }

@@ -1,8 +1,11 @@
 package com.gymapp.gym_backend_service.model.dto.request;
 
+import jakarta.validation.constraints.NotNull;
+
 import java.util.List;
 
 public class UpdateDietPlanRequestDTO {
+    @NotNull(message = "Diet Plan ID is required field")
     private Long dietPlanId;
     private String newTitle;
 

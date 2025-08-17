@@ -2,14 +2,17 @@ package com.gymapp.gym_backend_service.controller;
 
 import com.gymapp.gym_backend_service.model.CustomDietPlan;
 import com.gymapp.gym_backend_service.model.Diets;
-import com.gymapp.gym_backend_service.model.Member;
+import com.gymapp.gym_backend_service.model.Trainer;
 import com.gymapp.gym_backend_service.model.dto.request.CreateDietPlanRequestDTO;
 import com.gymapp.gym_backend_service.model.dto.request.UpdateDietPlanRequestDTO;
+import com.gymapp.gym_backend_service.model.dto.response.ApiResponse;
 import com.gymapp.gym_backend_service.model.dto.response.CustomDietPlanResponseDTO;
 import com.gymapp.gym_backend_service.model.dto.response.DietSummaryDTO;
+import com.gymapp.gym_backend_service.model.dto.response.custom_diet_plan.DietPlanResponseDTO;
 import com.gymapp.gym_backend_service.repository.CustomDietPlanRepository;
 import com.gymapp.gym_backend_service.repository.DietsRepository;
-import com.gymapp.gym_backend_service.repository.MemberRepository;
+import com.gymapp.gym_backend_service.repository.TrainerRepository;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
@@ -26,44 +29,65 @@ public class CustomDietPlanController {
     @Autowired
     private DietsRepository dietsRepository;
     @Autowired
-    private MemberRepository memberRepository;
+    private TrainerRepository trainerRepository;
 
-    @GetMapping("/member/{memberId}")
-    public ResponseEntity<?> getPlansByMember(@PathVariable Long memberId) {
-        List<CustomDietPlan> plans = customDietPlanRepository.findByMemberId(memberId);
-        return ResponseEntity.ok(plans);
+    @GetMapping("/trainer/{trainerId}")
+    public ResponseEntity<?> getPlansByMember(@PathVariable("trainerId") Long validatorId) {
+        List<CustomDietPlan> plans = customDietPlanRepository.findByCreatedById(validatorId);
+        Optional<Trainer> trainer = trainerRepository.findById(validatorId);
+
+        if(trainer.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse("error", "Not valid trainer id"));
+        if(plans.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse("error", "No Diet Plans so far"));
+
+        List<DietPlanResponseDTO> result = plans.stream().map((dietPlan) -> new DietPlanResponseDTO(dietPlan)).toList();
+        return ResponseEntity.ok(result);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<DietPlanResponseDTO>> getAllDietPlans() {
+        List<CustomDietPlan> customDietPlans = customDietPlanRepository.findAll();
+
+        List<DietPlanResponseDTO> result = customDietPlans.stream().map((dietPlan) -> new DietPlanResponseDTO(dietPlan)).toList();
+        return ResponseEntity.ok(result);
     }
 
     @PostMapping
-    public ResponseEntity<?> createCustomDietPlan(@RequestBody CreateDietPlanRequestDTO request) {
-        Optional<Member> memberOpt = memberRepository.findById(request.getMemberId());
-        if (memberOpt.isEmpty()) {
-            return ResponseEntity.badRequest().body("Invalid member ID");
+    public ResponseEntity<?> createCustomDietPlan(@Valid @RequestBody CreateDietPlanRequestDTO request) {
+        Optional<Trainer> trainerOpt = trainerRepository.findById(request.getCreatorId());
+        List<Diets> assignedDiets = (request.getDietsList() != null) ? request.getDietsList().stream().map(idVal -> {
+           Optional<Diets> assignedDiet = dietsRepository.findById(Long.valueOf(idVal));
+            return assignedDiet.orElse(null);
+        }).toList() : null;
+
+        if (trainerOpt.isEmpty()) {
+            return ResponseEntity.badRequest().body(new ApiResponse("error", "Invalid Trainer ID"));
         }
 
         CustomDietPlan plan = new CustomDietPlan();
         plan.setTitle(request.getTitle());
-        plan.setMember(memberOpt.get());
+        plan.setCreatedBy(trainerOpt.get());
+        if(assignedDiets != null) plan.setDiets(assignedDiets);
 
         CustomDietPlan savedPlan = customDietPlanRepository.save(plan);
         return ResponseEntity.ok(savedPlan);
     }
 
-
     @PostMapping("/assign-diets")
-    public ResponseEntity<?> assignDietsToPlan(@RequestBody DietAssignmentRequestDTO request) {
+    public ResponseEntity<?> assignDietsToPlan(@Valid @RequestBody DietAssignmentRequestDTO request) {
         Optional<CustomDietPlan> planOpt = customDietPlanRepository.findById(request.getDietPlanId());
         if (planOpt.isEmpty()) {
-            return ResponseEntity.badRequest().body("Diet Plan not found");
+            return ResponseEntity.badRequest().body(new ApiResponse("error", "Diet Plan not found"));
         }
 
         CustomDietPlan plan = planOpt.get();
-        List<Diets> dietsToAssign = dietsRepository.findAllById(request.getDietIds());
+        List<Diets> dietsToAssign = dietsRepository.findAllById(request.getDietsId());
 
-         plan.setDiets(dietsToAssign);
+        if (dietsToAssign.isEmpty()) { return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse("error", "Diets not found enter valid diet ID")); }
+
+        plan.setDiets(dietsToAssign);
 
         customDietPlanRepository.save(plan);
-        return ResponseEntity.ok("Diets assigned successfully");
+        return ResponseEntity.ok(new ApiResponse("success", "Diets assigned successfully"));
     }
 
     @PutMapping("/update-diet")
@@ -93,7 +117,7 @@ public class CustomDietPlanController {
         CustomDietPlanResponseDTO responseDTO = new CustomDietPlanResponseDTO();
         responseDTO.setId(updatedPlan.getId());
         responseDTO.setTitle(updatedPlan.getTitle());
-        responseDTO.setMemberName(updatedPlan.getMember().getName());
+        responseDTO.setCreatedBy(updatedPlan.getCreatedBy().getName());
 
         List<DietSummaryDTO> dietSummaries = updatedPlan.getDiets().stream().map(d -> {
             DietSummaryDTO dto = new DietSummaryDTO();
@@ -107,7 +131,5 @@ public class CustomDietPlanController {
         responseDTO.setDiets(dietSummaries);
 
         return ResponseEntity.ok(responseDTO);
-
     }
-
 }

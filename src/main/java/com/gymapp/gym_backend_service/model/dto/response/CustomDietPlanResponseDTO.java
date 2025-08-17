@@ -6,7 +6,7 @@ public class CustomDietPlanResponseDTO {
 
     private Long id;
     private String title;
-    private String memberName;
+    private String createdBy;
     private List<DietSummaryDTO> diets;
 
     public Long getId() {
@@ -25,12 +25,12 @@ public class CustomDietPlanResponseDTO {
         this.title = title;
     }
 
-    public String getMemberName() {
-        return memberName;
+    public String getCreatedBy() {
+        return createdBy;
     }
 
-    public void setMemberName(String memberName) {
-        this.memberName = memberName;
+    public void setCreatedBy(String createdBy) {
+        this.createdBy = createdBy;
     }
 
     public List<DietSummaryDTO> getDiets() {

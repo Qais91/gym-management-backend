@@ -3,19 +3,26 @@ package com.gymapp.gym_backend_service.controller;
 import com.gymapp.gym_backend_service.model.Member;
 import com.gymapp.gym_backend_service.model.Membership;
 import com.gymapp.gym_backend_service.model.RegisteredMemberships;
+import com.gymapp.gym_backend_service.model.Trainer;
+import com.gymapp.gym_backend_service.model.dto.response.ApiResponse;
 import com.gymapp.gym_backend_service.repository.MemberRepository;
 import com.gymapp.gym_backend_service.repository.MembershipRepository;
 import com.gymapp.gym_backend_service.repository.RegisteredMembershipsRepository;
-import com.gymapp.gym_backend_service.model.dto.response.RegisteredMembershipInfoResponseDTO;
+import com.gymapp.gym_backend_service.model.dto.response.registered_membership.RegisteredMembershipInfoResponseDTO;
+import com.gymapp.gym_backend_service.repository.TrainerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/registrations")
+@RequestMapping("/api/register")
 public class RegisteredMembershipController {
 
     @Autowired
@@ -80,24 +87,39 @@ public class RegisteredMembershipController {
         return ResponseEntity.ok(new ApiResponse("sucess", "Membership registration done. ID : " + memberships.getId()));
     }
 
+    @PutMapping("/assign/validator")
+    public ResponseEntity<?> assignValidator(@RequestParam Long registeredMemberShipID, @RequestParam Long trainerID) {
+        Optional<RegisteredMemberships> regMembership = registrationRepo.findById(registeredMemberShipID);
+        Optional<Trainer> validatorTrainer = trainerRepository.findById(trainerID);
+
+        if (regMembership.isEmpty()) { return ResponseEntity.badRequest().body(new ApiResponse("error", "Membership registered Not found")); }
+        if (validatorTrainer.isEmpty()) { return ResponseEntity.badRequest().body(new ApiResponse("error", "Trainer Not found")); }
+
+        regMembership.get().setValidator(validatorTrainer.get());
+        registrationRepo.save(regMembership.get());
+
+        return ResponseEntity.ok(new ApiResponse("success", "Validator Updated."));
+    }
+
+//    @PutMapping("/assign/custom-diet")
+//    public ResponseEntity<?> assignCustomDiet()
+
     @GetMapping("/member/{memberId}")
-    public ResponseEntity<?> getMemberMembershipInfo(@RequestParam Long memberID) {
-        List<RegisteredMemberships> registrations = registrationRepo.findByMemberId(memberID);
+    public ResponseEntity<?> getMemberMembershipInfo(@PathVariable("memberId") Long memberId) {
+        List<RegisteredMemberships> registrations = registrationRepo.findByMemberId(memberId);
+         Member member = memberRepo.findById(memberId).get();
 
         if (registrations.isEmpty()) {
-            return ResponseEntity.status(404).body("No memberships found for customer ID: " + memberID);
+            return ResponseEntity.status(404).body(new ApiResponse("error", "No yet Membership registered for : " + member.getName()));
         }
 
-        List<RegisteredMembershipInfoResponseDTO> result = registrations.stream().map(reg ->
-                new RegisteredMembershipInfoResponseDTO(
-                        reg.getMembership().getTitle(),
-                        reg.getStartDate(),
-                        reg.getEndDate(),
-                        reg.isActive()
-                )
-        ).toList();
+        List<RegisteredMembershipInfoResponseDTO> result = registrations.stream().map((reg) -> {
+            RegisteredMembershipInfoResponseDTO regMemDTO = new RegisteredMembershipInfoResponseDTO(reg);
+            regMemDTO.setUploadedDoc(reg.getDocumentPath() != null ? url + file_save_path + reg.getDocumentPath() : "_");
+            return regMemDTO;
+        }).toList();
 
-        return ResponseEntity.ok(registrations);
+        return ResponseEntity.ok(result);
     }
 
     @DeleteMapping("/{id}")

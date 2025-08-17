@@ -24,18 +24,48 @@ public class RegisteredMembershipController {
     private MemberRepository memberRepo;
     @Autowired
     private MembershipRepository membershipRepo;
+    @Autowired
+    private TrainerRepository trainerRepository;
+
+    String static_folder_path = "src/main/resources/static";
+    String file_save_path = "uploads/docs/";
+    String url = "http://localhost:8080/";
 
     @PostMapping
-    public ResponseEntity<?> registerMembership(@RequestParam Long memberId, @RequestParam Long membershipId) {
+    public ResponseEntity<?> registerMembership(@RequestParam Long memberId, @RequestParam Long membershipId, @RequestParam(required = false) MultipartFile medicalDocument) {
         Member member = memberRepo.findById(memberId).orElse(null);
         Membership membership = membershipRepo.findById(membershipId).orElse(null);
 
         if (member == null) {
-            return ResponseEntity.badRequest().body("Invalid member");
+            return ResponseEntity.badRequest().body(new ApiResponse("error", "Invalid member"));
         }
 
         if(membership == null) {
-            return ResponseEntity.badRequest().body("Invalid membership ID");
+            return ResponseEntity.badRequest().body(new ApiResponse("error", "Invalid membership ID"));
+        }
+;
+        String fileName = null;
+        try {
+            if (membership.getMedicalValidationRequired()) {
+                if (medicalDocument != null && !medicalDocument.isEmpty()) {
+
+                    String uploadDir = System.getProperty("user.dir") + File.separator + static_folder_path + File.separator + file_save_path;
+
+                    File dir = new File(uploadDir);
+                    if (!dir.exists()) dir.mkdirs();
+
+                    fileName = System.currentTimeMillis() + "_" + medicalDocument.getOriginalFilename();
+                    medicalDocument.transferTo(new File(dir, fileName));
+                } else {
+                   return ResponseEntity.badRequest().body(new ApiResponse("error", "This membership requires document. Kindly upload document"));
+                }
+            } else if (medicalDocument != null && !medicalDocument.isEmpty()) {
+                return ResponseEntity.badRequest().body(new ApiResponse("error", "This membership don't need document to uplaod"));
+            }
+        } catch (IOException e) {
+            System.out.println("ERROR OCCURED ::");
+            System.out.println(e);
+            return ResponseEntity.ok(new ApiResponse("error", "There is error in uploading document. Error: "+e.getMessage()));
         }
 
         RegisteredMemberships registration = new RegisteredMemberships();
@@ -43,9 +73,11 @@ public class RegisteredMembershipController {
         registration.setMembership(membership);
         registration.setStartDate(LocalDate.now());
         registration.setEndDate(LocalDate.now().plusMonths(membership.getDurationInMonths()));
+        registration.setDocumentPath(fileName);
         registration.setActive(true);
 
-        return ResponseEntity.ok(registrationRepo.save(registration));
+        RegisteredMemberships memberships = registrationRepo.save(registration);
+        return ResponseEntity.ok(new ApiResponse("sucess", "Membership registration done. ID : " + memberships.getId()));
     }
 
     @GetMapping("/member/{memberId}")

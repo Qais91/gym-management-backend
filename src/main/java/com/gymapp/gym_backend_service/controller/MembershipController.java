@@ -1,10 +1,11 @@
 package com.gymapp.gym_backend_service.controller;
 
 import com.gymapp.gym_backend_service.model.Membership;
+import com.gymapp.gym_backend_service.model.dto.request.memberShip.CreateMemberShipDTO;
 import com.gymapp.gym_backend_service.model.dto.response.ApiResponse;
 import com.gymapp.gym_backend_service.model.dto.response.MemberShipInfoResponseDTO;
-import com.gymapp.gym_backend_service.model.dto.response.RegisteredMembershipInfoResponseDTO;
 import com.gymapp.gym_backend_service.repository.MembershipRepository;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,12 +22,9 @@ public class MembershipController {
     private MembershipRepository membershipRepository;
 
     @PostMapping
-    public ResponseEntity<?> create(@RequestBody Membership membership) {
-        if(membership.getTitle() == null) { return ResponseEntity.ok(new ApiResponse("error", "Title is required field")); }
-        if(membership.getDurationInMonths() == null) { return ResponseEntity.ok(new ApiResponse("error", "Plan duration(in months) is mandatory field")); }
-        if(membership.getPricePerDurationMonth() == 0.0) { return ResponseEntity.ok(new ApiResponse("error", "Plan duration(in months) is mandatory field")); }
-
-        return ResponseEntity.ok(membershipRepository.save(membership));
+    public ResponseEntity<?> create(@Valid @RequestBody CreateMemberShipDTO membership) {
+        Membership mem = membershipRepository.save(new Membership(membership));
+        return ResponseEntity.ok(new ApiResponse("sucess", "membership created with ID : "+mem.getId()));
     }
 
     @GetMapping("/{id}")

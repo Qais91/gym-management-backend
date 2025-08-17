@@ -9,6 +9,15 @@ public class DietSummaryDTO {
     private String foodItem;
     private int calories;
 
+    public DietSummaryDTO() {}
+
+    public DietSummaryDTO(Diets diet) {
+        id = diet.getId();
+        mealType = diet.getMealType();
+        foodItem = diet.getFoodItem();
+        calories = diet.getCalories();
+    }
+
     public Long getId() {
         return id;
     }

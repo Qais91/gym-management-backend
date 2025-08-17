@@ -14,6 +14,8 @@ public class Diets {
     private String foodItem;
     private Integer calories;
 
+    private Integer price = 100;
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -25,4 +27,7 @@ public class Diets {
 
     public Integer getCalories() { return calories; }
     public void setCalories(int calories) { this.calories = calories; }
+
+    public Integer getPrice() { return price; }
+    public void setPrice(Integer priceVal) { price = priceVal; }
 }

@@ -13,10 +13,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.swing.text.html.Option;
 import java.io.File;
 import java.io.IOException;
-import java.security.PrivateKey;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -57,7 +55,7 @@ public class RegisteredMembershipController {
 ;
         String fileName = null;
 
-        RegisteredMemberships registration = new RegisteredMemberships();
+        RegisteredMembership registration = new RegisteredMembership();
         registration.setMemeber(member);
         registration.setMembership(membership);
         registration.setStartDate(LocalDate.now());
@@ -81,7 +79,7 @@ public class RegisteredMembershipController {
             } else if (medicalDocument != null && !medicalDocument.isEmpty()) {
                 return ResponseEntity.badRequest().body(new ApiResponse("error", "This membership don't need document to uplaod"));
             } else {
-                RegisteredMemberships memberships = registrationRepo.save(registration);
+                RegisteredMembership memberships = registrationRepo.save(registration);
                 return ResponseEntity.ok(new ApiResponse("sucess", "Membership registration done. ID : " + memberships.getId()));
             }
         } catch (IOException e) {
@@ -90,13 +88,13 @@ public class RegisteredMembershipController {
             return ResponseEntity.ok(new ApiResponse("error", "There is error in uploading document. Error: "+e.getMessage()));
         }
         registration.setDocumentPath(fileName);
-        RegisteredMemberships memberships = registrationRepo.save(registration);
+        RegisteredMembership memberships = registrationRepo.save(registration);
         return ResponseEntity.ok(new ApiResponse("sucess", "Membership registration done. ID : " + memberships.getId()));
     }
 
     @PutMapping("/assign/validator")
     public ResponseEntity<?> assignValidator(@Valid @RequestBody AssignValidatorRequest request) {
-        Optional<RegisteredMemberships> regMembership = registrationRepo.findById(request.getRegMemberShipID());
+        Optional<RegisteredMembership> regMembership = registrationRepo.findById(request.getRegMemberShipID());
         Optional<Trainer> validatorTrainer = trainerRepository.findById(request.getTrainerID());
 
         if (regMembership.isEmpty()) { return ResponseEntity.badRequest().body(new ApiResponse("error", "Membership registered Not found")); }
@@ -110,7 +108,7 @@ public class RegisteredMembershipController {
 
     @PutMapping("/assign/custom-diet")
     public ResponseEntity<?> assignCustomDiet(@Valid @RequestBody AssignCustomDietRequest request) {
-        Optional<RegisteredMemberships> regMembership = registrationRepo.findById(request.getRegMemberShipID());
+        Optional<RegisteredMembership> regMembership = registrationRepo.findById(request.getRegMemberShipID());
         Optional<CustomDietPlan> assignedDiet = customDietPlanRepository.findById(request.getCustomDietID());
 
         if (regMembership.isEmpty()) { return ResponseEntity.badRequest().body(new ApiResponse("error", "Invalid Membership")); }
@@ -125,7 +123,7 @@ public class RegisteredMembershipController {
 
     @PutMapping("/register/{regMemId}")
     public ResponseEntity<?> getRegisteredMemberShip(@PathVariable("regMemId") Long regMemId) {
-        Optional<RegisteredMemberships> registeredMembership = registrationRepo.findById(regMemId);
+        Optional<RegisteredMembership> registeredMembership = registrationRepo.findById(regMemId);
         if (registeredMembership.isEmpty()) {
             return ResponseEntity.status(404).body(new ApiResponse("error", "Invalid Membership ID"));
         }
@@ -148,7 +146,7 @@ public class RegisteredMembershipController {
 
     @GetMapping
     public ResponseEntity<?> getAllMemberShipInfo() {
-        List<RegisteredMemberships> registeredMemberships = registrationRepo.findAll();
+        List<RegisteredMembership> registeredMemberships = registrationRepo.findAll();
         if (registeredMemberships.isEmpty()) {
             return ResponseEntity.status(404).body(new ApiResponse("error", "No Membership registered yet"));
         }
@@ -163,7 +161,7 @@ public class RegisteredMembershipController {
 
     @GetMapping("/{regMemId}")
     public ResponseEntity<?> getRegMemberShipInfoByID(@PathVariable("regMemId") Long regMemID) {
-        Optional<RegisteredMemberships> registeredMembership = registrationRepo.findById(regMemID);
+        Optional<RegisteredMembership> registeredMembership = registrationRepo.findById(regMemID);
         if (registeredMembership.isEmpty()) {
             return ResponseEntity.status(404).body(new ApiResponse("error", "Invalid Membership ID"));
         }
@@ -173,7 +171,7 @@ public class RegisteredMembershipController {
 
     @GetMapping("/member/{memberId}")
     public ResponseEntity<?> getMemberMembershipInfo(@PathVariable("memberId") Long memberId) {
-        List<RegisteredMemberships> registrations = registrationRepo.findByMemberId(memberId);
+        List<RegisteredMembership> registrations = registrationRepo.findByMemberId(memberId);
          Member member = memberRepo.findById(memberId).get();
 
         if (registrations.isEmpty()) {
@@ -191,7 +189,7 @@ public class RegisteredMembershipController {
 
     @GetMapping("/trainer/{trainerId}")
     public ResponseEntity<?> getTrainerAssignedRegistratrionInfo(@PathVariable("trainerId") Long trainerId) {
-        List<RegisteredMemberships> registrations = registrationRepo.findByValidatorId(trainerId);
+        List<RegisteredMembership> registrations = registrationRepo.findByValidatorId(trainerId);
         Trainer trainer = trainerRepository.findById(trainerId).get();
 
         if (registrations.isEmpty()) {

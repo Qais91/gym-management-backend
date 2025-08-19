@@ -21,13 +21,13 @@ public class InvoiceDetail {
 
     @ManyToOne
     @JoinColumn(name = "registered_membership_id")
-    private RegisteredMemberships registeredMembership;
+    private RegisteredMembership registeredMembership;
 
     @Enumerated(EnumType.STRING)
     private PaymentStatus status = PaymentStatus.PENDING;
 
     public InvoiceDetail() {}
-    public InvoiceDetail(RegisteredMemberships membershipReg) {
+    public InvoiceDetail(RegisteredMembership membershipReg) {
         member = membershipReg.getMember();
         amount = membershipReg.getMembership().getPrice();
         description = String.format("Payment Breakdown:\nMemebership Fee: %f\n", membershipReg.getMembership().getPrice());
@@ -46,8 +46,8 @@ public class InvoiceDetail {
     public Member getMember() { return member; }
     public void setMember(Member member) { this.member = member; }
 
-    public RegisteredMemberships getRegisteredMembership() { return registeredMembership; }
-    public void setRegisteredMembership(RegisteredMemberships registeredMembership) { this.registeredMembership = registeredMembership; }
+    public RegisteredMembership getRegisteredMembership() { return registeredMembership; }
+    public void setRegisteredMembership(RegisteredMembership registeredMembership) { this.registeredMembership = registeredMembership; }
 
     public double getAmount() { return amount; }
     public void setAmount(double amount) { this.amount = amount; }
@@ -60,4 +60,7 @@ public class InvoiceDetail {
 
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
+
+    public void setStatus(PaymentStatus status) { this.status = status; }
+    public PaymentStatus getStatus() { return status; }
 }

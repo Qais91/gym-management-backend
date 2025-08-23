@@ -1,6 +1,7 @@
 package com.gymapp.gym_backend_service.model.enums;
 
 public enum UserRole {
-    GymMemeber,
-    Trainer
+    MEMBER,
+    TRAINER,
+    ADMIN
 }

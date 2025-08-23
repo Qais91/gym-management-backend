@@ -39,7 +39,7 @@ public class TrainerController {
 
     @GetMapping("/{id}")
     public ResponseEntity<?> getTrainerById(@PathVariable Long id) {
-        List<User> trainer = userRepository.findByUserRole(UserRole.Trainer);
+        List<User> trainer = userRepository.findByUserRole(UserRole.TRAINER);
         if(trainer.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(new ApiResponse("error", "No Members"));
@@ -54,7 +54,7 @@ public class TrainerController {
     @GetMapping
     public ResponseEntity<List<UserResponse>> getAllTrainer() {
         return ResponseEntity.ok(
-            userRepository.findByUserRole(UserRole.Trainer)
+            userRepository.findByUserRole(UserRole.TRAINER)
                 .stream()
                 .map((user) -> new UserResponse(user))
                 .toList()

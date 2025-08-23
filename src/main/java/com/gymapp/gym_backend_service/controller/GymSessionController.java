@@ -4,30 +4,22 @@ import com.gymapp.gym_backend_service.model.GymSession;
 import com.gymapp.gym_backend_service.model.Member;
 import com.gymapp.gym_backend_service.model.Trainer;
 import com.gymapp.gym_backend_service.model.User;
-import com.gymapp.gym_backend_service.model.dto.request.AddSessionLogRequest;
-import com.gymapp.gym_backend_service.model.dto.request.CreateGymSessionRequest;
 import com.gymapp.gym_backend_service.model.dto.request.GymSessionRequest;
 import com.gymapp.gym_backend_service.model.dto.response.ApiResponse;
-import com.gymapp.gym_backend_service.model.dto.response.GymSessionResponse;
-import com.gymapp.gym_backend_service.model.dto.response.SessionLogResponse;
 import com.gymapp.gym_backend_service.model.dto.response.gym_session.CreateGymSessionResponseDTO;
 import com.gymapp.gym_backend_service.model.dto.response.gym_session.GymSessionFullResponseDTO;
 import com.gymapp.gym_backend_service.model.dto.response.gym_session.SessionResponseDTO;
 import com.gymapp.gym_backend_service.model.enums.ActivityType;
 import com.gymapp.gym_backend_service.model.enums.UserRole;
 import com.gymapp.gym_backend_service.repository.*;
-import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 
-import javax.swing.text.html.Option;
-import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/gym-sessions")
@@ -80,11 +72,11 @@ public class GymSessionController {
     public ResponseEntity<?> createGymSession(@RequestBody GymSessionRequest request) {
 
         Optional<User> trainerOpt = userRepository.findById(request.getTrainerId());
-        if (trainerOpt.isEmpty() || !UserRole.Trainer.equals(trainerOpt.get().getUserRole())) {
+        if (trainerOpt.isEmpty() || !UserRole.TRAINER.equals(trainerOpt.get().getUserRole())) {
             return ResponseEntity.badRequest().body(new ApiResponse("error", "Invalid trainer ID or user is not a trainer."));
         }
         Optional<User> memberOpt = userRepository.findById(request.getMemberId());
-        if (memberOpt.isEmpty() || !UserRole.GymMemeber.equals(memberOpt.get().getUserRole())) {
+        if (memberOpt.isEmpty() || !UserRole.MEMBER.equals(memberOpt.get().getUserRole())) {
             return ResponseEntity.badRequest().body(new ApiResponse("error", "Invalid member ID or user is not a member."));
         }
 

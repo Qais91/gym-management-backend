@@ -7,7 +7,7 @@ import jakarta.persistence.*;
 @PrimaryKeyJoinColumn(name = "id")
 public class Trainer extends User {
 
-    Trainer() { setUserRole(UserRole.Trainer); }
+    Trainer() { setUserRole(UserRole.TRAINER); }
 
     private int experience;
     private String specialization;

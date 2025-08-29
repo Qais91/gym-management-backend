@@ -19,7 +19,7 @@ public class Membership {
 
     public Membership(CreateMemberShipDTO memberShipDTO) {
         title = memberShipDTO.getTitle();
-        durationInMonths = memberShipDTO.getTimePeriod();
+        durationInMonths = memberShipDTO.getTimePeriodInMonth();
         price = memberShipDTO.getPrice();
         dietsIncluded  = memberShipDTO.getDietIncluded();
         medicalValidationRequired = memberShipDTO.getNeedMedicalValidation();

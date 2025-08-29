@@ -10,7 +10,7 @@ public class CreateMemberShipDTO {
     private Long price;
 
     @NotNull(message = "Time period is required")
-    private Integer timePeriod;
+    private Integer timePeriodInMonth;
 
     private boolean needMedicalValidation = false;
     private boolean dietIncluded = false;
@@ -21,8 +21,8 @@ public class CreateMemberShipDTO {
     public double getPrice() { return price; }
     public void setPrice(Long priceVal) { this.price=priceVal; }
 
-    public int getTimePeriod() { return timePeriod; }
-    public void setTimePeriod(int timePeriod) { this.timePeriod = timePeriod; }
+    public int getTimePeriodInMonth() { return timePeriodInMonth; }
+    public void setTimePeriodInMonth(int timePeriodInMonth) { this.timePeriodInMonth = timePeriodInMonth; }
 
     public boolean getDietIncluded() { return dietIncluded; }
     public void setDietIncluded(boolean dietIncluded) { this.dietIncluded = dietIncluded; }

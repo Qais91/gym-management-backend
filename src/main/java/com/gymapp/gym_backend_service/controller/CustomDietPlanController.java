@@ -1,5 +1,6 @@
 package com.gymapp.gym_backend_service.controller;
 
+import com.gymapp.gym_backend_service.authorization.JWTHandler;
 import com.gymapp.gym_backend_service.model.CustomDietPlan;
 import com.gymapp.gym_backend_service.model.Diets;
 import com.gymapp.gym_backend_service.model.Trainer;
@@ -15,6 +16,7 @@ import com.gymapp.gym_backend_service.repository.TrainerRepository;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import com.gymapp.gym_backend_service.model.dto.request.DietAssignmentRequestDTO;
 
@@ -30,9 +32,18 @@ public class CustomDietPlanController {
     private DietsRepository dietsRepository;
     @Autowired
     private TrainerRepository trainerRepository;
+    @Autowired
+    private JWTHandler jwtHandler;
 
+    Long getMemberID(String header) {
+        String token = header.substring(7);
+        return jwtHandler.extractUserId(token);
+    }
+
+    @PreAuthorize("hasRole('TRAINER')")
     @GetMapping("/trainer/{trainerId}")
-    public ResponseEntity<?> getPlansByMember(@PathVariable("trainerId") Long validatorId) {
+    public ResponseEntity<?> getPlansByMember(@RequestHeader("Authorization") String header) {
+        Long validatorId = getMemberID(header);
         List<CustomDietPlan> plans = customDietPlanRepository.findByCreatedById(validatorId);
         Optional<Trainer> trainer = trainerRepository.findById(validatorId);
 
@@ -43,6 +54,7 @@ public class CustomDietPlanController {
         return ResponseEntity.ok(result);
     }
 
+    @PreAuthorize("hasRole('TRAINER')")
     @GetMapping
     public ResponseEntity<List<DietPlanResponseDTO>> getAllDietPlans() {
         List<CustomDietPlan> customDietPlans = customDietPlanRepository.findAll();
@@ -51,9 +63,11 @@ public class CustomDietPlanController {
         return ResponseEntity.ok(result);
     }
 
+    @PreAuthorize("hasRole('TRAINER')")
     @PostMapping
-    public ResponseEntity<?> createCustomDietPlan(@Valid @RequestBody CreateDietPlanRequestDTO request) {
-        Optional<Trainer> trainerOpt = trainerRepository.findById(request.getCreatorId());
+    public ResponseEntity<?> createCustomDietPlan(@RequestHeader("Authorization") String header, @Valid @RequestBody CreateDietPlanRequestDTO request) {
+        Long trainerId = getMemberID(header);
+        Optional<Trainer> trainerOpt = trainerRepository.findById(trainerId);
         List<Diets> assignedDiets = (request.getDietsList() != null) ? request.getDietsList().stream().map(idVal -> {
            Optional<Diets> assignedDiet = dietsRepository.findById(Long.valueOf(idVal));
             return assignedDiet.orElse(null);
@@ -72,6 +86,7 @@ public class CustomDietPlanController {
         return ResponseEntity.ok(savedPlan);
     }
 
+    @PreAuthorize("hasRole('TRAINER')")
     @PostMapping("/assign-diets")
     public ResponseEntity<?> assignDietsToPlan(@Valid @RequestBody DietAssignmentRequestDTO request) {
         Optional<CustomDietPlan> planOpt = customDietPlanRepository.findById(request.getDietPlanId());
@@ -90,6 +105,7 @@ public class CustomDietPlanController {
         return ResponseEntity.ok(new ApiResponse("success", "Diets assigned successfully"));
     }
 
+    @PreAuthorize("hasRole('TRAINER')")
     @PutMapping("/update-diet")
     public ResponseEntity<?> updateDietPlan(@RequestBody UpdateDietPlanRequestDTO request) {
         Optional<CustomDietPlan> planOpt = customDietPlanRepository.findById(request.getDietPlanId());

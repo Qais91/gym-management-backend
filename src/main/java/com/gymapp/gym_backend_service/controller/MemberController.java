@@ -1,15 +1,14 @@
 package com.gymapp.gym_backend_service.controller;
 
-import com.gymapp.gym_backend_service.model.Member;
-import com.gymapp.gym_backend_service.model.Trainer;
-import com.gymapp.gym_backend_service.model.User;
+import com.gymapp.gym_backend_service.authorization.JWTHandler;
+import com.gymapp.gym_backend_service.model.*;
+import com.gymapp.gym_backend_service.model.dto.request.member.AssignTrainerRequestDTO;
 import com.gymapp.gym_backend_service.model.dto.request.member.CreateMemberRequestDTO;
 import com.gymapp.gym_backend_service.model.dto.response.ApiResponse;
 import com.gymapp.gym_backend_service.model.dto.response.UserResponse;
+import com.gymapp.gym_backend_service.model.dto.response.member.MemberInfoResponseDTO;
 import com.gymapp.gym_backend_service.model.enums.UserRole;
-import com.gymapp.gym_backend_service.repository.MemberRepository;
-import com.gymapp.gym_backend_service.repository.TrainerRepository;
-import com.gymapp.gym_backend_service.repository.UserRepository;
+import com.gymapp.gym_backend_service.repository.*;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -19,7 +18,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
-import javax.swing.text.html.Option;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -34,6 +33,16 @@ public class MemberController {
     private UserRepository userRepository;
     @Autowired
     private TrainerRepository trainerRepo;
+    @Autowired
+    private JWTHandler jwtHandler;
+    @Autowired
+    private RegisteredMembershipsRepository registeredMembershipsRepository;
+
+    boolean isMemberActive(Member member) {
+        Optional<RegisteredMembership> memReg = registeredMembershipsRepository.findByIdAndEndDateAfter(member.getId(), LocalDate.now());
+        System.out.println(memReg.isEmpty());
+        return !memReg.isEmpty();
+    }
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
@@ -61,9 +70,41 @@ public class MemberController {
         if(!trainer.isEmpty())  mem.setTrainer(trainer.get());
 
         Member savedMember = memberRepository.save(mem);
-        return ResponseEntity.ok(savedMember);
+        return ResponseEntity.ok(new MemberInfoResponseDTO(savedMember));
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MEMBER')")
+    @PostMapping("/assign/trainer")
+    public ResponseEntity<?> assignTrainer(@RequestHeader("Authorization") String header, @RequestBody AssignTrainerRequestDTO request) {
+        String token = header.substring(7);
+        Long memberId = jwtHandler.extractUserId(token);
+
+        if(memberId == null) return ResponseEntity.badRequest().body(new ApiResponse("error", "Token Error"));
+
+        Optional<User> requestUser = userRepository.findById(memberId);
+        Member member;
+        if(requestUser.isEmpty() || requestUser.get().getUserRole() == UserRole.ADMIN) {
+            member = memberRepository.findByUsername(request.getMemberName());
+        } else {
+            member = memberRepository.findById(requestUser.get().getId()).get();
+        }
+
+//        System.out.println("<< --------------------- >>");
+//        System.out.println(isMemberActive(member));
+        if(!isMemberActive(member)) { return ResponseEntity.badRequest().body(new ApiResponse("error",  member.getUsername()+ " haven't registered for any membership can't assign trainer")); }
+
+        Trainer trainer = trainerRepo.findByUsername(request.getTrainerName());
+
+        if(trainer == null) { return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse("error", "Trainer not found")); }
+        if(member == null) { return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse("error", "Member not found")); }
+
+        member.setTrainer(trainer);
+        memberRepository.save(member);
+
+        return ResponseEntity.ok(new ApiResponse("success", "Trainer updated"));
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/{id}")
     public ResponseEntity<?> getMemeberById(@PathVariable Long id) {
         Optional<Member> memberOpt = memberRepository.findById(id);
@@ -72,10 +113,10 @@ public class MemberController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(new ApiResponse("error", "Member Not Found"));
         }
-        return ResponseEntity.ok(memberOpt.get());
+        return ResponseEntity.ok(new MemberInfoResponseDTO(memberOpt.get()));
     }
 
-    @PreAuthorize("hasRole('ADMIN', 'TRAINER')")
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public ResponseEntity<?> getAllMemeber() {
         List<User> members = userRepository.findByUserRole(UserRole.MEMBER);

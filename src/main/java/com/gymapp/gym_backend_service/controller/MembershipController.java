@@ -9,6 +9,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,12 +22,14 @@ public class MembershipController {
     @Autowired
     private MembershipRepository membershipRepository;
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<?> create(@Valid @RequestBody CreateMemberShipDTO membership) {
         Membership mem = membershipRepository.save(new Membership(membership));
         return ResponseEntity.ok(new ApiResponse("sucess", "membership created with ID : "+mem.getId()));
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MEMBER')")
     @GetMapping("/{id}")
     public ResponseEntity<?> getById(@PathVariable Long id) {
         Optional<Membership> memberShip = membershipRepository.findById(id);
@@ -37,6 +40,7 @@ public class MembershipController {
         return ResponseEntity.ok(memberShip.get());
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MEMBER')")
     @GetMapping
     public ResponseEntity<?> getAllMemebership() {
         List<Membership> memberships = membershipRepository.findAll();

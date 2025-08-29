@@ -7,6 +7,7 @@ import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import com.gymapp.gym_backend_service.model.Diets;
 
@@ -20,6 +21,7 @@ public class DietsController {
     @Autowired
     private DietsRepository dietsRepository;
 
+    @PreAuthorize("hasRole('TRAINER')")
     @PostMapping
     public ResponseEntity<?> createDiet(@RequestBody Diets diet) {
 
@@ -35,6 +37,7 @@ public class DietsController {
         return ResponseEntity.ok(dietsRepository.save(diet));
     }
 
+    @PreAuthorize("hasAnyRole('TRAINER')")
     @GetMapping("/{id}")
     public ResponseEntity<?> getDietById(@PathVariable Long id) {
         Optional<Diets> diet = dietsRepository.findById(id);
@@ -44,6 +47,7 @@ public class DietsController {
         return ResponseEntity.ok(diet);
     }
 
+    @PreAuthorize("hasAnyRole('TRAINER')")
     @GetMapping
     public ResponseEntity<?> getAllDiets() {
         List<Diets> diets = dietsRepository.findAll();

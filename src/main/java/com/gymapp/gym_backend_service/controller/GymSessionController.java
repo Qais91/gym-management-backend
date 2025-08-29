@@ -1,5 +1,6 @@
 package com.gymapp.gym_backend_service.controller;
 
+import com.gymapp.gym_backend_service.authorization.JWTHandler;
 import com.gymapp.gym_backend_service.model.GymSession;
 import com.gymapp.gym_backend_service.model.Member;
 import com.gymapp.gym_backend_service.model.Trainer;
@@ -14,6 +15,7 @@ import com.gymapp.gym_backend_service.model.enums.UserRole;
 import com.gymapp.gym_backend_service.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 
@@ -31,7 +33,15 @@ public class GymSessionController {
     private UserRepository userRepository;
     @Autowired
     private MemberRepository memberRepository;
+    @Autowired
+    private JWTHandler jwtHandler;
 
+    Long getMemberID(String header) {
+        String token = header.substring(7);
+        return jwtHandler.extractUserId(token);
+    }
+
+    @PreAuthorize("hasRole('MEMBER')")
     @GetMapping
     public ResponseEntity<?> getAllSessions() {
         List<GymSession> allSessions = gymSessionRepository.findAll();
@@ -41,8 +51,9 @@ public class GymSessionController {
         return ResponseEntity.ok(allSessions.stream().map((session -> new SessionResponseDTO(session))).toList());
     }
 
+    @PreAuthorize("hasRole('MEMBER')")
     @GetMapping("/user/{id}")
-    public ResponseEntity<?> getSessionByUser(@PathVariable Long id) {
+    public ResponseEntity<?> getSessionByUser(@PathVariable("id") Long id) {
         List<GymSession> sessionFilteredByMember = gymSessionRepository.findByMember((Member) userRepository.findById(id).get());
         if(sessionFilteredByMember.isEmpty()) {
             return ResponseEntity.badRequest().body(new ApiResponse("error", "Enter a valid member ID"));
@@ -51,8 +62,9 @@ public class GymSessionController {
         return ResponseEntity.ok(sessionFilteredByMember.stream().map((gymSession -> new SessionResponseDTO(gymSession))).toList());
     }
 
+    @PreAuthorize("hasRole('MEMBER')")
     @GetMapping("/trainer/{id}")
-    public ResponseEntity<?> getSessionByTrainer(@PathVariable Long id) {
+    public ResponseEntity<?> getSessionByTrainer(@PathVariable("id") Long id) {
         List<GymSession> sessionFilteredByTrainer = gymSessionRepository.findByTrainer((Trainer) userRepository.findById(id).get());
         if(sessionFilteredByTrainer.isEmpty()) {
             return ResponseEntity.badRequest().body(new ApiResponse("error", "Enter a valid Trainer ID"));
@@ -61,21 +73,25 @@ public class GymSessionController {
         return ResponseEntity.ok(sessionFilteredByTrainer.stream().map((gymSession -> new SessionResponseDTO(gymSession))).toList());
     }
 
+    @PreAuthorize("hasRole('MEMBER')")
     @GetMapping("/{id}")
-    public ResponseEntity<?> getSessionById(@PathVariable Long id) {
+    public ResponseEntity<?> getSessionById(@PathVariable("id") Long id) {
          Optional<GymSession> gymSession = gymSessionRepository.findById(id);
          if(gymSession.isEmpty()) { ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse("error", "Enter a valid Session ID")); }
         return ResponseEntity.ok(new GymSessionFullResponseDTO(gymSession.get()));
     }
 
+    @PreAuthorize("hasRole('MEMBER')")
     @PostMapping
-    public ResponseEntity<?> createGymSession(@RequestBody GymSessionRequest request) {
+    public ResponseEntity<?> createGymSession(@RequestHeader("Authorization") String header, @RequestBody GymSessionRequest request) {
+        Long memberID = getMemberID(header);
+        if(memberID == null) { return ResponseEntity.badRequest().body(new ApiResponse("error", "Invalid token. Kindly check token")); }
 
         Optional<User> trainerOpt = userRepository.findById(request.getTrainerId());
         if (trainerOpt.isEmpty() || !UserRole.TRAINER.equals(trainerOpt.get().getUserRole())) {
             return ResponseEntity.badRequest().body(new ApiResponse("error", "Invalid trainer ID or user is not a trainer."));
         }
-        Optional<User> memberOpt = userRepository.findById(request.getMemberId());
+        Optional<User> memberOpt = userRepository.findById(memberID);
         if (memberOpt.isEmpty() || !UserRole.MEMBER.equals(memberOpt.get().getUserRole())) {
             return ResponseEntity.badRequest().body(new ApiResponse("error", "Invalid member ID or user is not a member."));
         }

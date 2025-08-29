@@ -37,10 +37,8 @@ public class AuthController {
             Authentication auth = authManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword())
             );
-            String token = jwtService.generateToken((UserDetails) auth.getPrincipal());
+            String token = jwtService.generateToken((UserDetails) auth.getPrincipal(), user);
             String role = user.getUserRole().name();
-
-            System.out.println(" ------->>> "+role);
 
             return ResponseEntity.ok(new LoginResponse(user.getUsername(), role, token));
 

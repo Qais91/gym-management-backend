@@ -1,6 +1,7 @@
 package com.gymapp.gym_backend_service.authorization;
 
 import com.gymapp.gym_backend_service.model.User;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
@@ -11,13 +12,18 @@ import org.springframework.stereotype.Component;
 
 import java.security.Key;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 @Component
 public class JWTHandler {
     private final String SECRET_KEY = Encoders.BASE64.encode("0123456789_(MuscelBlazorGYM@2025)_9876543210".getBytes());
 
-    public String generateToken(UserDetails userDetails) {
+    public String generateToken(UserDetails userDetails, User user) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("member_id", user.getId());
         return Jwts.builder()
+                .setClaims(claims)
                 .setSubject(userDetails.getUsername())
                 .claim("roles", userDetails.getAuthorities())
                 .setIssuedAt(new Date())
@@ -33,6 +39,16 @@ public class JWTHandler {
                 .parseClaimsJws(token)
                 .getBody()
                 .getSubject();
+    }
+
+    public Long extractUserId(String token) {
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(getSignKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+
+        return claims.get("member_id", Long.class);
     }
 
     public boolean isTokenValid(String token, UserDetails userDetails) {

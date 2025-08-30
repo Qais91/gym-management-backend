@@ -1,15 +1,15 @@
 package com.gymapp.gym_backend_service.controller;
 
 import com.gymapp.gym_backend_service.authorization.JWTHandler;
-import com.gymapp.gym_backend_service.model.CustomDietPlan;
-import com.gymapp.gym_backend_service.model.Diets;
-import com.gymapp.gym_backend_service.model.Trainer;
-import com.gymapp.gym_backend_service.model.dto.request.CreateDietPlanRequestDTO;
-import com.gymapp.gym_backend_service.model.dto.request.UpdateDietPlanRequestDTO;
-import com.gymapp.gym_backend_service.model.dto.response.ApiResponse;
-import com.gymapp.gym_backend_service.model.dto.response.CustomDietPlanResponseDTO;
-import com.gymapp.gym_backend_service.model.dto.response.DietSummaryDTO;
-import com.gymapp.gym_backend_service.model.dto.response.custom_diet_plan.DietPlanResponseDTO;
+import com.gymapp.gym_backend_service.data.model.CustomDietPlan;
+import com.gymapp.gym_backend_service.data.model.Diets;
+import com.gymapp.gym_backend_service.data.model.Trainer;
+import com.gymapp.gym_backend_service.data.dto.request.CreateDietPlanRequestDTO;
+import com.gymapp.gym_backend_service.data.dto.request.UpdateDietPlanRequestDTO;
+import com.gymapp.gym_backend_service.data.dto.response.ApiResponse;
+import com.gymapp.gym_backend_service.data.dto.response.CustomDietPlanResponseDTO;
+import com.gymapp.gym_backend_service.data.dto.response.DietSummaryDTO;
+import com.gymapp.gym_backend_service.data.dto.response.custom_diet_plan.DietPlanResponseDTO;
 import com.gymapp.gym_backend_service.repository.CustomDietPlanRepository;
 import com.gymapp.gym_backend_service.repository.DietsRepository;
 import com.gymapp.gym_backend_service.repository.TrainerRepository;
@@ -18,7 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import com.gymapp.gym_backend_service.model.dto.request.DietAssignmentRequestDTO;
+import com.gymapp.gym_backend_service.data.dto.request.DietAssignmentRequestDTO;
 
 import java.util.List;
 import java.util.Optional;

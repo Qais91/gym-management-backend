@@ -1,11 +1,11 @@
 package com.gymapp.gym_backend_service.controller;
 
-import com.gymapp.gym_backend_service.model.Trainer;
-import com.gymapp.gym_backend_service.model.User;
-import com.gymapp.gym_backend_service.model.dto.request.trainer.CreateTrainerRequestDTO;
-import com.gymapp.gym_backend_service.model.dto.response.ApiResponse;
-import com.gymapp.gym_backend_service.model.dto.response.UserResponse;
-import com.gymapp.gym_backend_service.model.enums.UserRole;
+import com.gymapp.gym_backend_service.data.model.Trainer;
+import com.gymapp.gym_backend_service.data.model.User;
+import com.gymapp.gym_backend_service.data.dto.request.trainer.CreateTrainerRequestDTO;
+import com.gymapp.gym_backend_service.data.dto.response.ApiResponse;
+import com.gymapp.gym_backend_service.data.dto.response.UserResponse;
+import com.gymapp.gym_backend_service.data.enums.UserRole;
 import com.gymapp.gym_backend_service.repository.TrainerRepository;
 import com.gymapp.gym_backend_service.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -2,12 +2,12 @@ package com.gymapp.gym_backend_service.controller;
 
 import com.gymapp.gym_backend_service.authorization.JWTHandler;
 import com.gymapp.gym_backend_service.model.*;
-import com.gymapp.gym_backend_service.model.dto.request.member.AssignTrainerRequestDTO;
-import com.gymapp.gym_backend_service.model.dto.request.member.CreateMemberRequestDTO;
-import com.gymapp.gym_backend_service.model.dto.response.ApiResponse;
-import com.gymapp.gym_backend_service.model.dto.response.UserResponse;
-import com.gymapp.gym_backend_service.model.dto.response.member.MemberInfoResponseDTO;
-import com.gymapp.gym_backend_service.model.enums.UserRole;
+import com.gymapp.gym_backend_service.data.dto.request.member.AssignTrainerRequestDTO;
+import com.gymapp.gym_backend_service.data.dto.request.member.CreateMemberRequestDTO;
+import com.gymapp.gym_backend_service.data.dto.response.ApiResponse;
+import com.gymapp.gym_backend_service.data.dto.response.UserResponse;
+import com.gymapp.gym_backend_service.data.dto.response.member.MemberInfoResponseDTO;
+import com.gymapp.gym_backend_service.data.enums.UserRole;
 import com.gymapp.gym_backend_service.repository.*;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;

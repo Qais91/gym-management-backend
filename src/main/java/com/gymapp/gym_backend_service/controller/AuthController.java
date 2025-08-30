@@ -1,11 +1,9 @@
 package com.gymapp.gym_backend_service.controller;
 
 import com.gymapp.gym_backend_service.authorization.JWTHandler;
-import com.gymapp.gym_backend_service.model.Member;
-import com.gymapp.gym_backend_service.model.Trainer;
-import com.gymapp.gym_backend_service.model.User;
-import com.gymapp.gym_backend_service.model.dto.response.ApiResponse;
-import com.gymapp.gym_backend_service.model.dto.response.auth.LoginResponse;
+import com.gymapp.gym_backend_service.data.model.User;
+import com.gymapp.gym_backend_service.data.dto.response.ApiResponse;
+import com.gymapp.gym_backend_service.data.dto.response.auth.LoginResponse;
 import com.gymapp.gym_backend_service.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

@@ -1,12 +1,12 @@
 package com.gymapp.gym_backend_service.controller;
 
 import com.gymapp.gym_backend_service.authorization.JWTHandler;
-import com.gymapp.gym_backend_service.model.InvoiceDetail;
-import com.gymapp.gym_backend_service.model.RegisteredMembership;
-import com.gymapp.gym_backend_service.model.dto.request.InvoiceRequestDTO;
-import com.gymapp.gym_backend_service.model.dto.response.ApiResponse;
-import com.gymapp.gym_backend_service.model.dto.response.invoice.InvoiceResponseDTO;
-import com.gymapp.gym_backend_service.model.enums.PaymentStatus;
+import com.gymapp.gym_backend_service.data.model.InvoiceDetail;
+import com.gymapp.gym_backend_service.data.model.RegisteredMembership;
+import com.gymapp.gym_backend_service.data.dto.request.InvoiceRequestDTO;
+import com.gymapp.gym_backend_service.data.dto.response.ApiResponse;
+import com.gymapp.gym_backend_service.data.dto.response.invoice.InvoiceResponseDTO;
+import com.gymapp.gym_backend_service.data.enums.PaymentStatus;
 import com.gymapp.gym_backend_service.repository.InvoiceDetailRepository;
 import com.gymapp.gym_backend_service.repository.RegisteredMembershipsRepository;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,6 +1,6 @@
 package com.gymapp.gym_backend_service.error_handler;
 
-import com.gymapp.gym_backend_service.model.dto.response.ApiResponse;
+import com.gymapp.gym_backend_service.data.dto.response.ApiResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;

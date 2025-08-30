@@ -1,7 +1,7 @@
 package com.gymapp.gym_backend_service.authorization;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.gymapp.gym_backend_service.model.dto.response.ApiResponse;
+import com.gymapp.gym_backend_service.data.dto.response.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.access.AccessDeniedException;

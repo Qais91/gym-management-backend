@@ -1,14 +1,15 @@
 package com.gymapp.gym_backend_service.controller;
 
 import com.gymapp.gym_backend_service.authorization.JWTHandler;
+import com.gymapp.gym_backend_service.data.model.*;
 import com.gymapp.gym_backend_service.model.*;
-import com.gymapp.gym_backend_service.model.dto.request.register_membership.AssignCustomDietRequest;
-import com.gymapp.gym_backend_service.model.dto.request.register_membership.AssignValidatorRequest;
-import com.gymapp.gym_backend_service.model.dto.response.ApiResponse;
-import com.gymapp.gym_backend_service.model.enums.RegistrationStatus;
-import com.gymapp.gym_backend_service.model.enums.UserRole;
+import com.gymapp.gym_backend_service.data.dto.request.register_membership.AssignCustomDietRequest;
+import com.gymapp.gym_backend_service.data.dto.request.register_membership.AssignValidatorRequest;
+import com.gymapp.gym_backend_service.data.dto.response.ApiResponse;
+import com.gymapp.gym_backend_service.data.enums.RegistrationStatus;
+import com.gymapp.gym_backend_service.data.enums.UserRole;
 import com.gymapp.gym_backend_service.repository.*;
-import com.gymapp.gym_backend_service.model.dto.response.registered_membership.RegisteredMembershipInfoResponseDTO;
+import com.gymapp.gym_backend_service.data.dto.response.registered_membership.RegisteredMembershipInfoResponseDTO;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

@@ -1,9 +1,9 @@
 package com.gymapp.gym_backend_service.controller;
 
-import com.gymapp.gym_backend_service.model.Membership;
-import com.gymapp.gym_backend_service.model.dto.request.memberShip.CreateMemberShipDTO;
-import com.gymapp.gym_backend_service.model.dto.response.ApiResponse;
-import com.gymapp.gym_backend_service.model.dto.response.MemberShipInfoResponseDTO;
+import com.gymapp.gym_backend_service.data.model.Membership;
+import com.gymapp.gym_backend_service.data.dto.request.memberShip.CreateMemberShipDTO;
+import com.gymapp.gym_backend_service.data.dto.response.ApiResponse;
+import com.gymapp.gym_backend_service.data.dto.response.MemberShipInfoResponseDTO;
 import com.gymapp.gym_backend_service.repository.MembershipRepository;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;

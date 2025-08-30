@@ -1,6 +1,6 @@
 package com.gymapp.gym_backend_service.authorization;
 
-import com.gymapp.gym_backend_service.model.User;
+import com.gymapp.gym_backend_service.data.model.User;
 import com.gymapp.gym_backend_service.repository.UserRepository;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;

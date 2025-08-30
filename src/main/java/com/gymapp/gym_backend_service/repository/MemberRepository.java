@@ -1,6 +1,6 @@
 package com.gymapp.gym_backend_service.repository;
 
-import com.gymapp.gym_backend_service.model.Member;
+import com.gymapp.gym_backend_service.data.model.Member;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

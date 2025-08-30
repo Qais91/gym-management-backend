@@ -1,7 +1,7 @@
 package com.gymapp.gym_backend_service.repository;
 
-import com.gymapp.gym_backend_service.model.User;
-import com.gymapp.gym_backend_service.model.enums.UserRole;
+import com.gymapp.gym_backend_service.data.model.User;
+import com.gymapp.gym_backend_service.data.enums.UserRole;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 

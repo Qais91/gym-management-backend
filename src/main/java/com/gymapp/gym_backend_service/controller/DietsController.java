@@ -1,15 +1,13 @@
 package com.gymapp.gym_backend_service.controller;
 
-import com.gymapp.gym_backend_service.model.Trainer;
-import com.gymapp.gym_backend_service.model.dto.response.ApiResponse;
+import com.gymapp.gym_backend_service.data.dto.response.ApiResponse;
 import com.gymapp.gym_backend_service.repository.DietsRepository;
-import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import com.gymapp.gym_backend_service.model.Diets;
+import com.gymapp.gym_backend_service.data.model.Diets;
 
 import java.util.List;
 import java.util.Optional;

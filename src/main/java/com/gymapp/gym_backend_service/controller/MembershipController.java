@@ -1,7 +1,7 @@
 package com.gymapp.gym_backend_service.controller;
 
 import com.gymapp.gym_backend_service.data.model.Membership;
-import com.gymapp.gym_backend_service.data.dto.request.memberShip.CreateMemberShipDTO;
+import com.gymapp.gym_backend_service.data.dto.request.memberShip.CreateMemberShipRequestDTO;
 import com.gymapp.gym_backend_service.data.dto.response.ApiResponse;
 import com.gymapp.gym_backend_service.data.dto.response.MemberShipInfoResponseDTO;
 import com.gymapp.gym_backend_service.repository.MembershipRepository;
@@ -24,7 +24,7 @@ public class MembershipController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
-    public ResponseEntity<?> create(@Valid @RequestBody CreateMemberShipDTO membership) {
+    public ResponseEntity<?> create(@Valid @RequestBody CreateMemberShipRequestDTO membership) {
         Membership mem = membershipRepository.save(new Membership(membership));
         return ResponseEntity.ok(new ApiResponse("sucess", "membership created with ID : "+mem.getId()));
     }

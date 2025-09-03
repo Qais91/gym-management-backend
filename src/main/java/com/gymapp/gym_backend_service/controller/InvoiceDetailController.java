@@ -43,10 +43,9 @@ public class InvoiceDetailController {
         RegisteredMembership membership = regMemberRepo.findById(requestDTO.getMemberShipId()).orElse(null);
         InvoiceDetail invoiceDetail = invoiceRepo.findByRegisteredMembershipId(requestDTO.getMemberShipId());
 
-//        System.out.println("No invoice vof");
-//        System.out.println(invoiceDetail.getStatus());
-
         if (membership == null) { return ResponseEntity.badRequest().body(new ApiResponse("error", "Invalid Membership ID")); }
+        if(membership.getStatus() == RegistrationStatus.DENIED || membership.getStatus() == RegistrationStatus.INACTIVE) return ResponseEntity.badRequest().body(new ApiResponse("error", "Unable to initiate payment for this membership. Membership Invalidated"));
+
         if(invoiceDetail.getStatus() != PaymentStatus.DENIED) { return ResponseEntity.badRequest().body(new ApiResponse("error", "Unable to initiate payment for this membership")); }
 
         InvoiceDetail invoice = new InvoiceDetail(membership);
@@ -79,6 +78,18 @@ public class InvoiceDetailController {
         List<InvoiceDetail> invoices = invoiceRepo.findByMemberId(customerId);
 
         if(invoices.isEmpty()) { return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse("error", "No Invoice found for this member")); }
+        List<InvoiceResponseDTO> res = invoices.stream().map(invoice -> new InvoiceResponseDTO(invoice)).toList();
+
+        return ResponseEntity.ok(res);
+    }
+
+    @PreAuthorize("hasRole('MEMBER')")
+    @GetMapping("/member/pending")
+    public ResponseEntity<?> getPendingInvoicesForCustomer(@RequestHeader("Authorization") String header) {
+        Long customerId = getMemberID(header);
+        List<InvoiceDetail> invoices = invoiceRepo.findPendingInvoicesByMember(customerId);
+
+        if(invoices.isEmpty()) { return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse("error", "No pending Invoices found")); }
         List<InvoiceResponseDTO> res = invoices.stream().map(invoice -> new InvoiceResponseDTO(invoice)).toList();
 
         return ResponseEntity.ok(res);

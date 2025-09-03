@@ -1,27 +1,32 @@
 package com.gymapp.gym_backend_service.data.dto.request;
 
-import com.gymapp.gym_backend_service.model.Member;
-import com.gymapp.gym_backend_service.model.Trainer;
-import com.gymapp.gym_backend_service.model.enums.ActivityType;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 public class GymSessionRequest {
     @NotNull(message = "Activity type is required")
     private String activityType;
 
+    @NotNull(message = "Calories Burned is required")
+    private Long caloriesBurned;
+
+    private String notes;
+
     @NotNull(message = "Start time is required")
-    @Future(message = "Start time must be in the future")
-    private LocalDateTime startTime;
-    private LocalDateTime endTime;
+    @JsonFormat(pattern = "H:mm")
+    private LocalTime startTime;
 
-    public Long getMemberId() { return memberId; }
-    public void setMember(Long memberId) { this.memberId = memberId; }
+    @NotNull(message = "End time is required")
+    @JsonFormat(pattern = "H:mm")
+    private LocalTime endTime;
 
-    public Long getTrainerId() { return trainerId; }
-    public void setTrainer(Long trainerId) { this.trainerId = trainerId; }
+
+    public Long getCaloriesBurned() { return caloriesBurned; }
+    public void setCaloriesBurned(Long caloriesBurned) { this.caloriesBurned=caloriesBurned; }
 
     public String getActivityType() { return activityType; }
     public void setActivityType(String activityType) { this.activityType = activityType; }
@@ -29,10 +34,10 @@ public class GymSessionRequest {
     public String getNotes() { return notes; }
     public void setNotes(String notes) { this.notes = notes; }
 
-    public LocalDateTime getStartTime() { return startTime; }
-    public void setStartTime(LocalDateTime startTime) { this.startTime = startTime; }
+    public LocalTime getStartTime() { return startTime; }
+    public void setStartTime(LocalTime startTime) { this.startTime = startTime; }
 
-    public LocalDateTime getEndTime() { return endTime; }
-    public void setEndTime(LocalDateTime endTime) { this.endTime = endTime; }
+    public LocalTime getEndTime() { return endTime; }
+    public void setEndTime(LocalTime endTime) { this.endTime = endTime; }
 
 }

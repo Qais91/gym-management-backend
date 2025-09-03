@@ -8,7 +8,12 @@ import jakarta.persistence.*;
 @PrimaryKeyJoinColumn(name = "id")
 public class Member extends User {
 
-    Member() { setUserRole(UserRole.MEMBER); }
+    Member() {}
+
+    public Member(String userName, String name, String email, String phoneNumber, String password) {
+        super(userName, name, email, phoneNumber, password);
+        setUserRole(UserRole.MEMBER);
+    }
 
     public Member(CreateMemberRequestDTO memberInfo) {
         setName(memberInfo.getName());
@@ -22,7 +27,6 @@ public class Member extends User {
     @JoinColumn(name = "personal_trainer_id")
     private Trainer personalTrainer;
 
-    private boolean isValid;
     public Trainer getTrainer() { return personalTrainer; }
     public void setTrainer(Trainer trainer) { this.personalTrainer = trainer; }
 }

@@ -8,6 +8,16 @@ import java.time.LocalDate;
 @Inheritance(strategy = InheritanceType.JOINED)
 public class User {
 
+    User() {}
+
+    public User(String userName, String name, String email, String phoneNumber, String password) {
+        setName(name);
+        setUsername(userName);
+        setEmail(email);
+        setPhoneNumber(phoneNumber);
+        setPassword(password);
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

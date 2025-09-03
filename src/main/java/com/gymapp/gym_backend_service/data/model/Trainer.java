@@ -8,7 +8,14 @@ import jakarta.persistence.*;
 @PrimaryKeyJoinColumn(name = "id")
 public class Trainer extends User {
 
-    Trainer() { setUserRole(UserRole.TRAINER); }
+    Trainer() {}
+
+    public Trainer(String userName, String name, String email, String phoneNumber, String password, String specialization, Integer experience) {
+        super(userName, name, email, phoneNumber, password);
+        setSpecialization(specialization);
+        setExperience(experience);
+        setUserRole(UserRole.TRAINER);
+    }
 
     public Trainer(CreateTrainerRequestDTO trainerInfo) {
         setName(trainerInfo.getName());
@@ -17,7 +24,6 @@ public class Trainer extends User {
         setPhoneNumber(trainerInfo.getPhoneNumber());
         setSpecialization(trainerInfo.getSpecialization());
         setExperience(trainerInfo.getExperience());
-        setRatings(trainerInfo.getRatings());
         setUserRole(UserRole.TRAINER);
     }
 

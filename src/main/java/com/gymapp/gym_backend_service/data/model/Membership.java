@@ -1,6 +1,6 @@
 package com.gymapp.gym_backend_service.data.model;
 
-import com.gymapp.gym_backend_service.data.dto.request.memberShip.CreateMemberShipDTO;
+import com.gymapp.gym_backend_service.data.dto.request.memberShip.CreateMemberShipRequestDTO;
 import jakarta.persistence.*;
 
 @Entity
@@ -12,16 +12,24 @@ public class Membership {
     private String title;
     private Integer durationInMonths;
     private double price;
-    private boolean dietsIncluded = false;
+    private boolean trainerIncluded = false;
     private boolean medicalValidationRequired = false;
 
-    public Membership() {}
+    Membership() {}
 
-    public Membership(CreateMemberShipDTO memberShipDTO) {
+    public Membership(String title, Integer durationMonth, double price, boolean trainerIncluded, boolean medicalValidationRequired) {
+        this.title = title;
+        this.durationInMonths = durationMonth;
+        this.price = price;
+        this.trainerIncluded = trainerIncluded;
+        this.medicalValidationRequired = medicalValidationRequired;
+    }
+
+    public Membership(CreateMemberShipRequestDTO memberShipDTO) {
         title = memberShipDTO.getTitle();
         durationInMonths = memberShipDTO.getTimePeriodInMonth();
         price = memberShipDTO.getPrice();
-        dietsIncluded  = memberShipDTO.getDietIncluded();
+        trainerIncluded = memberShipDTO.getTrainerIncluded();
         medicalValidationRequired = memberShipDTO.getNeedMedicalValidation();
     }
 
@@ -37,8 +45,8 @@ public class Membership {
     public Integer getDurationInMonths() { return durationInMonths; }
     public void setDurationInMonths(int durationInMonths) { this.durationInMonths = durationInMonths; }
 
-    public boolean getDietsIncluded() { return dietsIncluded; }
-    public  void setDietsIncluded(boolean dietsIncluded) { this.dietsIncluded = dietsIncluded; }
+    public boolean getTrainerIncluded() { return trainerIncluded; }
+    public  void setTrainerIncluded(boolean trainerIncluded) { this.trainerIncluded = trainerIncluded; }
 
     public void setMedicalValidationRequired(boolean isRequired) { medicalValidationRequired = isRequired; }
     public boolean getMedicalValidationRequired() { return medicalValidationRequired; }

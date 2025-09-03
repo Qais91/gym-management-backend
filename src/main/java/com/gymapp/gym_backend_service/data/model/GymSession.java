@@ -18,9 +18,11 @@ public class GymSession {
     @JoinColumn(name = "trainer_id")
     private Trainer trainer;
 
-
     @Enumerated(EnumType.STRING)
     private ActivityType activityType;
+
+    private Long caloriesBurned;
+
     @Column(length = 1000)
     private String notes;
 
@@ -29,6 +31,9 @@ public class GymSession {
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
+
+    public Long getCaloriesBurned() { return caloriesBurned; }
+    public void setCaloriesBurned(Long caloriesBurned) { this.caloriesBurned = caloriesBurned; }
 
     public Member getMember() { return member; }
     public void setMember(Member member) { this.member = member; }

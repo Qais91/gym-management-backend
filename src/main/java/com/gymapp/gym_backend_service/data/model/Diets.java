@@ -1,5 +1,7 @@
 package com.gymapp.gym_backend_service.data.model;
 
+import com.gymapp.gym_backend_service.data.dto.request.diet.CreateDietRequestDTO;
+import com.gymapp.gym_backend_service.data.enums.DietMealType;
 import jakarta.persistence.*;
 
 @Entity
@@ -8,7 +10,8 @@ public class Diets {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String mealType;
+    @Enumerated(EnumType.STRING)
+    private DietMealType mealType;
 
     @Column(length = 1000)
     private String foodItem;
@@ -16,11 +19,26 @@ public class Diets {
 
     private Integer price = 100;
 
+    Diets() {}
+
+    public Diets(String foodItem, DietMealType mealType, Integer calories, Integer price) {
+        this.foodItem = foodItem;
+        this.calories = calories;
+        this.mealType = mealType;
+        this.price = price;
+    }
+
+    public Diets(CreateDietRequestDTO diets) {
+        foodItem = diets.getFoodItem();
+        calories = diets.getCalories();
+        price = (diets.getPrice() == null) ? price : diets.getPrice();
+    }
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
-    public String getMealType() { return mealType; }
-    public void setMealType(String mealType) { this.mealType = mealType; }
+    public DietMealType getMealType() { return mealType; }
+    public void setMealType(DietMealType mealType) { this.mealType = mealType; }
 
     public String getFoodItem() { return foodItem; }
     public void setFoodItem(String foodItem) { this.foodItem = foodItem; }

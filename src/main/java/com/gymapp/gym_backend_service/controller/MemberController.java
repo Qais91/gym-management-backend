@@ -42,15 +42,15 @@ public class MemberController {
     private RegisteredMembershipsRepository registeredMembershipsRepository;
 
     boolean isMemberActive(Member member) {
-        Optional<RegisteredMembership> memReg = registeredMembershipsRepository.findByIdAndEndDateAfter(member.getId(), LocalDate.now());
-        System.out.println(memReg.isEmpty());
-        return !memReg.isEmpty();
+//        Optional<RegisteredMembership> memReg = registeredMembershipsRepository.findActiveRegisteredMemberShip(member.getId(), LocalDate.now());
+//        return !memReg.isEmpty();
+        return registeredMembershipsRepository.isMemberShipActive(member.getId());
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<?> createMember(@Valid @RequestBody CreateMemberRequestDTO member) {
-        if (userRepository.existsByUsername(member.getName())) {
+        if (userRepository.existsByUsername(member.getUsername())) {
             return ResponseEntity.badRequest().body(new ApiResponse("false", "Username already exists"));
         }
         if(userRepository.existsByEmail(member.getEmail())) {
@@ -78,7 +78,7 @@ public class MemberController {
 
     @PreAuthorize("hasAnyRole('ADMIN', 'MEMBER')")
     @PostMapping("/assign/trainer")
-    public ResponseEntity<?> assignTrainer(@RequestHeader("Authorization") String header, @RequestBody AssignTrainerRequestDTO request) {
+    public ResponseEntity<?> assignTrainer(@RequestHeader("Authorization") String header,@Valid @RequestBody AssignTrainerRequestDTO request) {
         String token = header.substring(7);
         Long memberId = jwtHandler.extractUserId(token);
 
@@ -92,14 +92,16 @@ public class MemberController {
             member = memberRepository.findById(requestUser.get().getId()).get();
         }
 
-//        System.out.println("<< --------------------- >>");
-//        System.out.println(isMemberActive(member));
-        if(!isMemberActive(member)) { return ResponseEntity.badRequest().body(new ApiResponse("error",  member.getUsername()+ " haven't registered for any membership can't assign trainer")); }
+        if(member == null) { return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse("error", "Member not found")); }
+
+        if(!isMemberActive(member)) { return ResponseEntity.badRequest().body(new ApiResponse("error", "User don't have any active registered membership. Unable to assign trainer")); }
+
+        RegisteredMembership regMem = registeredMembershipsRepository.findActiveRegisteredMemberShip(member.getId()).get();
+        if(!regMem.getMembership().getTrainerIncluded()) return ResponseEntity.badRequest().body(new ApiResponse("error", "User can't have any trainer in current membership."));
 
         Trainer trainer = trainerRepo.findByUsername(request.getTrainerName());
 
         if(trainer == null) { return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse("error", "Trainer not found")); }
-        if(member == null) { return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse("error", "Member not found")); }
 
         member.setTrainer(trainer);
         memberRepository.save(member);

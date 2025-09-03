@@ -1,6 +1,7 @@
 package com.gymapp.gym_backend_service.controller;
 
 import com.gymapp.gym_backend_service.authorization.JWTHandler;
+import com.gymapp.gym_backend_service.data.enums.RegistrationStatus;
 import com.gymapp.gym_backend_service.data.model.InvoiceDetail;
 import com.gymapp.gym_backend_service.data.model.RegisteredMembership;
 import com.gymapp.gym_backend_service.data.dto.request.invoice.InvoiceRequestDTO;
@@ -9,6 +10,7 @@ import com.gymapp.gym_backend_service.data.dto.response.invoice.InvoiceResponseD
 import com.gymapp.gym_backend_service.data.enums.PaymentStatus;
 import com.gymapp.gym_backend_service.repository.InvoiceDetailRepository;
 import com.gymapp.gym_backend_service.repository.RegisteredMembershipsRepository;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -37,14 +39,19 @@ public class InvoiceDetailController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
-    public ResponseEntity<?> createInvoice(@RequestBody InvoiceRequestDTO requestDTO) {
+    public ResponseEntity<?> createInvoice(@Valid @RequestBody InvoiceRequestDTO requestDTO) {
         RegisteredMembership membership = regMemberRepo.findById(requestDTO.getMemberShipId()).orElse(null);
-        if (membership == null) { return ResponseEntity.badRequest().body("Invalid customer ID"); }
+        InvoiceDetail invoiceDetail = invoiceRepo.findByRegisteredMembershipId(requestDTO.getMemberShipId());
+
+//        System.out.println("No invoice vof");
+//        System.out.println(invoiceDetail.getStatus());
+
+        if (membership == null) { return ResponseEntity.badRequest().body(new ApiResponse("error", "Invalid Membership ID")); }
+        if(invoiceDetail.getStatus() != PaymentStatus.DENIED) { return ResponseEntity.badRequest().body(new ApiResponse("error", "Unable to initiate payment for this membership")); }
 
         InvoiceDetail invoice = new InvoiceDetail(membership);
-        invoice.setPaymentMode(requestDTO.getPaymentMode());
 
-        return ResponseEntity.ok(invoiceRepo.save(invoice));
+        return ResponseEntity.ok(new InvoiceResponseDTO(invoiceRepo.save(invoice)));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -78,30 +85,50 @@ public class InvoiceDetailController {
     }
 
     @PreAuthorize("hasRole('MEMBER')")
-    @PutMapping("/deny/{invoiceId}")
-    public ResponseEntity<?>  denyInvoice(@RequestHeader("Authorization") String header, @PathVariable("invoiceId") Long invoiceId) {
+    @PutMapping("/deny")
+    public ResponseEntity<?>  denyInvoice(@RequestHeader("Authorization") String header) {
         Long memberId = getMemberID(header);
-        Optional<InvoiceDetail> payInvoice = invoiceRepo.findById(invoiceId);
-        if (payInvoice.isEmpty()) return ResponseEntity.status(404).body(new ApiResponse("error", "Invalid ID"));
+        List<InvoiceDetail> payInvoices = invoiceRepo.findPendingInvoicesByMember(memberId);
 
-        if(payInvoice.get().getStatus() == PaymentStatus.PAID) return ResponseEntity.badRequest().body(new ApiResponse("error", "Invoice is been Paid unable to deny this invoice"));
+//        System.out.println("MEmeber ID "+memberId);
 
-        if(!payInvoice.get().getMember().getId().equals(memberId)) return ResponseEntity.badRequest().body(new ApiResponse("error", "Unable to deny. UnAuthorised Access"));
+        if(payInvoices.stream().count() == 0) return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse("error", "No Invoice pending to be paid"));
 
-        payInvoice.get().setStatus(PaymentStatus.DENIED);
-        return ResponseEntity.ok(new InvoiceResponseDTO(payInvoice.get()));
+        InvoiceDetail payInvoice = payInvoices.get(0);
+
+//        Optional<InvoiceDetail> payInvoice = invoiceRepo.findById(invoiceId);
+//        if (payInvoice.isEmpty()) return ResponseEntity.status(404).body(new ApiResponse("error", "Invalid ID"));
+
+        if(payInvoice.getStatus() == PaymentStatus.PAID) return ResponseEntity.badRequest().body(new ApiResponse("error", "Invoice is been Paid unable to deny this invoice"));
+
+        if(!payInvoice.getMember().getId().equals(memberId)) return ResponseEntity.badRequest().body(new ApiResponse("error", "Unable to deny. UnAuthorised Access"));
+
+        payInvoice.setStatus(PaymentStatus.DENIED);
+        InvoiceDetail deniedInvoice = invoiceRepo.save(payInvoice);
+        return ResponseEntity.ok(new InvoiceResponseDTO(deniedInvoice));
     }
 
-    @PutMapping("/pay/{invoiceId}")
-    public ResponseEntity<?>  payInvoice(@PathVariable("invoiceId") Long invoiceId) {
-        InvoiceDetail payInvoice = invoiceRepo.findById(invoiceId).orElse(null);
-        if (payInvoice == null) return ResponseEntity.badRequest().body(new ApiResponse("error", "Invalid ID"));
+//    @PathVariable("invoiceId") Long invoiceId
+    @PreAuthorize("hasRole('MEMBER')")
+    @PutMapping("/pay")
+    public ResponseEntity<?>  payInvoice(@RequestHeader("Authorization") String header) {
+        Long memberId = getMemberID(header);
+        List<InvoiceDetail> payInvoices = invoiceRepo.findPendingInvoicesByMember(memberId);
+
+        if(payInvoices.stream().count() == 0) return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse("error", "No Invoice pending to pay"));
+
+        InvoiceDetail payInvoice = payInvoices.get(0);
+        RegisteredMembership registeredMembership = payInvoice.getRegisteredMembership();
+
+        if(payInvoice == null) return ResponseEntity.badRequest().body(new ApiResponse("error", "Invalid ID"));
         if(payInvoice.getStatus() == PaymentStatus.DENIED) return ResponseEntity.badRequest().body(new ApiResponse("error", "Invoice is been denied unable to pay"));
         if(payInvoice.getStatus() == PaymentStatus.PAID) return ResponseEntity.badRequest().body(new ApiResponse("error", "Invoice is been Paid unable to pay again"));
 
+        registeredMembership.setStatus(RegistrationStatus.REGISTERED);
         payInvoice.setStatus(PaymentStatus.PAID);
         payInvoice.getRegisteredMembership().setStartDate(LocalDate.now());
         payInvoice.getRegisteredMembership().setEndDate(LocalDate.now().plusMonths(payInvoice.getRegisteredMembership().getMembership().getDurationInMonths()));
+        regMemberRepo.save(registeredMembership);
         InvoiceDetail invoice = invoiceRepo.save(payInvoice);
         return ResponseEntity.ok(new InvoiceResponseDTO(invoice));
     }

@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import com.gymapp.gym_backend_service.data.dto.request.DietAssignmentRequestDTO;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @RestController
@@ -73,6 +74,9 @@ public class CustomDietPlanController {
             return assignedDiet.orElse(null);
         }).toList() : null;
 
+//        System.out.println("assignedDiets :: ");
+//        System.out.println(assignedDiets);
+
         if (trainerOpt.isEmpty()) {
             return ResponseEntity.badRequest().body(new ApiResponse("error", "Invalid Trainer ID"));
         }
@@ -80,10 +84,13 @@ public class CustomDietPlanController {
         CustomDietPlan plan = new CustomDietPlan();
         plan.setTitle(request.getTitle());
         plan.setCreatedBy(trainerOpt.get());
-        if(assignedDiets != null) plan.setDiets(assignedDiets);
+        if(assignedDiets != null) {
+            if (assignedDiets.stream().anyMatch(Objects::isNull)) return ResponseEntity.badRequest().body(new ApiResponse("error", "One of diet is invalid. Enter valid diets list"));
+            plan.setDiets(assignedDiets);
+        }
 
         CustomDietPlan savedPlan = customDietPlanRepository.save(plan);
-        return ResponseEntity.ok(savedPlan);
+        return ResponseEntity.ok(new DietPlanResponseDTO(savedPlan));
     }
 
     @PreAuthorize("hasRole('TRAINER')")
@@ -138,7 +145,7 @@ public class CustomDietPlanController {
         List<DietSummaryDTO> dietSummaries = updatedPlan.getDiets().stream().map(d -> {
             DietSummaryDTO dto = new DietSummaryDTO();
             dto.setId(d.getId());
-            dto.setMealType(d.getMealType());
+            dto.setMealType((d.getMealType() != null) ? d.getMealType().name() : "-");
             dto.setFoodItem(d.getFoodItem());
             dto.setCalories(d.getCalories());
             return dto;

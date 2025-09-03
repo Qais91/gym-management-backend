@@ -1,7 +1,10 @@
 package com.gymapp.gym_backend_service.controller;
 
 import com.gymapp.gym_backend_service.authorization.JWTHandler;
-import com.gymapp.gym_backend_service.model.*;
+import com.gymapp.gym_backend_service.data.model.Member;
+import com.gymapp.gym_backend_service.data.model.RegisteredMembership;
+import com.gymapp.gym_backend_service.data.model.Trainer;
+import com.gymapp.gym_backend_service.data.model.User;
 import com.gymapp.gym_backend_service.data.dto.request.member.AssignTrainerRequestDTO;
 import com.gymapp.gym_backend_service.data.dto.request.member.CreateMemberRequestDTO;
 import com.gymapp.gym_backend_service.data.dto.response.ApiResponse;

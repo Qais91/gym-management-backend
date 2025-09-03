@@ -5,7 +5,7 @@ import com.gymapp.gym_backend_service.data.model.CustomDietPlan;
 import com.gymapp.gym_backend_service.data.model.Diets;
 import com.gymapp.gym_backend_service.data.model.Trainer;
 import com.gymapp.gym_backend_service.data.dto.request.CreateDietPlanRequestDTO;
-import com.gymapp.gym_backend_service.data.dto.request.UpdateDietPlanRequestDTO;
+import com.gymapp.gym_backend_service.data.dto.request.custom_diet.UpdateDietPlanRequestDTO;
 import com.gymapp.gym_backend_service.data.dto.response.ApiResponse;
 import com.gymapp.gym_backend_service.data.dto.response.CustomDietPlanResponseDTO;
 import com.gymapp.gym_backend_service.data.dto.response.DietSummaryDTO;

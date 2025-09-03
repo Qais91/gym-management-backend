@@ -1,4 +1,4 @@
-package com.gymapp.gym_backend_service.data.dto.request;
+package com.gymapp.gym_backend_service.data.dto.request.gym_session;
 
 import java.time.LocalDateTime;
 

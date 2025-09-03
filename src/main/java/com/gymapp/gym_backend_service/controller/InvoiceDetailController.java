@@ -3,7 +3,7 @@ package com.gymapp.gym_backend_service.controller;
 import com.gymapp.gym_backend_service.authorization.JWTHandler;
 import com.gymapp.gym_backend_service.data.model.InvoiceDetail;
 import com.gymapp.gym_backend_service.data.model.RegisteredMembership;
-import com.gymapp.gym_backend_service.data.dto.request.InvoiceRequestDTO;
+import com.gymapp.gym_backend_service.data.dto.request.invoice.InvoiceRequestDTO;
 import com.gymapp.gym_backend_service.data.dto.response.ApiResponse;
 import com.gymapp.gym_backend_service.data.dto.response.invoice.InvoiceResponseDTO;
 import com.gymapp.gym_backend_service.data.enums.PaymentStatus;

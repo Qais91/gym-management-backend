@@ -1,4 +1,4 @@
-package com.gymapp.gym_backend_service.data.dto.request;
+package com.gymapp.gym_backend_service.data.dto.request.custom_diet;
 
 import jakarta.validation.constraints.NotNull;
 

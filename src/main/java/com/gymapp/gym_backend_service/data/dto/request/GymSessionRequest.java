@@ -9,13 +9,6 @@ import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
 public class GymSessionRequest {
-    @NotNull(message = "Trainer ID is required")
-    private Long trainerId;
-
-    @NotNull(message = "Member ID is required")
-    private Long memberId;
-    private String notes;
-
     @NotNull(message = "Activity type is required")
     private String activityType;
 

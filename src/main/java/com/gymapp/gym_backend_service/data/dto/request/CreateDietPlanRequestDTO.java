@@ -8,8 +8,7 @@ public class CreateDietPlanRequestDTO {
 
     @NotNull(message="Title field is required")
     private String title;
-    @NotNull(message="Creator ID is mandatory")
-    private Long creatorId;
+
     private List<Integer> dietsList;
 
     public String getTitle() {
@@ -18,14 +17,6 @@ public class CreateDietPlanRequestDTO {
 
     public void setTitle(String title) {
         this.title = title;
-    }
-
-    public Long getCreatorId() {
-        return creatorId;
-    }
-
-    public void setCreatorId(Long creatorId) {
-        this.creatorId = creatorId;
     }
 
     public void setDietsList(List<Integer> dietsList) {

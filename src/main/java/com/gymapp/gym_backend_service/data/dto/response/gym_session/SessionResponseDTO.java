@@ -15,7 +15,7 @@ public class SessionResponseDTO {
     public SessionResponseDTO(GymSession session) {
         sessionId = session.getId();
         memberName = session.getMember().getUsername();
-        trainerName = session.getTrainer().getUsername();
+        trainerName = (session.getTrainer() != null) ? session.getTrainer().getUsername() : "-";
         sessionDate = session.getStartTime().toLocalDate();
         activity = session.getActivityType();
     }

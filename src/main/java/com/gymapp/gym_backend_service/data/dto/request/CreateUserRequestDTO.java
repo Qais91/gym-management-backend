@@ -1,16 +1,29 @@
 package com.gymapp.gym_backend_service.data.dto.request;
 
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 
 public class CreateUserRequestDTO {
     @NotBlank(message = "Name is required")
     private String name;
+
     @NotBlank(message = "Email is required")
+    @Email(message = "Invalid email format")
     private String email;
+
+    @Pattern(
+        regexp = "^[0-9]+$",
+        message = "Invalid phone number"
+    )
+    @Size(min = 9, message = "Invalid Phone number")
     @NotBlank(message = "Phone number is mandatory")
     private String phoneNumber;
+
     @NotBlank(message = "User name is mandatory")
     private String username;
+
     @NotBlank(message = "Password is required")
     private String password;
 

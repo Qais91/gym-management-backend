@@ -3,24 +3,22 @@ package com.gymapp.gym_backend_service.data.dto.response.registered_membership;
 import com.gymapp.gym_backend_service.data.dto.response.custom_diet_plan.DietPlanResponseDTO;
 import com.gymapp.gym_backend_service.data.model.RegisteredMembership;
 
-import java.time.LocalDate;
-
 public class RegisteredMembershipInfoResponseDTO extends RegMembershipOverviewInfoDTO {
 
     private String uploadedDoc;
-    private LocalDate endDate;
-    private DietPlanResponseDTO customdietPlan;
+    private String endDate;
+    private DietPlanResponseDTO customDietPlan;
 
     public RegisteredMembershipInfoResponseDTO(RegisteredMembership regMemberShip) {
         super(regMemberShip);
-        endDate = regMemberShip.getEndDate();
-        customdietPlan = new DietPlanResponseDTO(regMemberShip.getDietPlan());
+        endDate = (regMemberShip.getEndDate() == null) ? "-" : regMemberShip.getEndDate().toString();
+        customDietPlan = (regMemberShip.getDietPlan() != null) ? new DietPlanResponseDTO(regMemberShip.getDietPlan()) : null;
         uploadedDoc = "-";
     }
 
     public void setUploadedDoc(String docPath) { uploadedDoc = docPath; }
 
     public String getUploadedDoc() { return uploadedDoc; }
-    public DietPlanResponseDTO getCustomdietPlan() { return customdietPlan; }
-    public LocalDate getEndDate() { return endDate; }
+    public DietPlanResponseDTO getCustomDietPlan() { return customDietPlan; }
+    public String getEndDate() { return endDate; }
 }

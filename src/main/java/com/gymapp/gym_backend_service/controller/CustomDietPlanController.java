@@ -107,7 +107,7 @@ public class CustomDietPlanController {
 
     @PreAuthorize("hasRole('TRAINER')")
     @PutMapping("/update-diet")
-    public ResponseEntity<?> updateDietPlan(@RequestBody UpdateDietPlanRequestDTO request) {
+    public ResponseEntity<?> updateDietPlan(@Valid @RequestBody UpdateDietPlanRequestDTO request) {
         Optional<CustomDietPlan> planOpt = customDietPlanRepository.findById(request.getDietPlanId());
         if (planOpt.isEmpty()) {
             return ResponseEntity.badRequest().body("Diet Plan not found");

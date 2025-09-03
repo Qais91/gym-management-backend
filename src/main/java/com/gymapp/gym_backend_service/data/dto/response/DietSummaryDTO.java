@@ -13,7 +13,7 @@ public class DietSummaryDTO {
 
     public DietSummaryDTO(Diets diet) {
         id = diet.getId();
-        mealType = diet.getMealType();
+        mealType = diet.getMealType() != null ? diet.getMealType().name() : "-";
         foodItem = diet.getFoodItem();
         calories = diet.getCalories();
     }

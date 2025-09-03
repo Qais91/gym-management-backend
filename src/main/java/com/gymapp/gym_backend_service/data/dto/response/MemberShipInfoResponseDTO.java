@@ -6,17 +6,20 @@ public class MemberShipInfoResponseDTO {
     private Long membershipID;
     private String planName;
     private double price;
-    private boolean documentRequired;
+    private Integer durationInMonth;
+    private boolean medicalValidationRequired;
 
     public MemberShipInfoResponseDTO(Membership membership) {
         membershipID = membership.getId();
         planName = membership.getTitle();
         price = membership.getPrice();
-        documentRequired = membership.getMedicalValidationRequired();
+        durationInMonth = membership.getDurationInMonths();
+        medicalValidationRequired = membership.getMedicalValidationRequired();
     }
 
     public Long getMembershipID() { return membershipID; }
     public String getPlanName() { return planName; }
     public double getPrice() { return price; }
-    public boolean isDocumentRequired() { return documentRequired; }
+    public Integer getDurationInMonth() { return durationInMonth; }
+    public boolean getMedicalValidationRequired() { return medicalValidationRequired; }
 }

@@ -15,7 +15,7 @@ public class DietPlanResponseDTO {
         id = customDietPlan.getId();
         title = customDietPlan.getTitle();
         createdBy = customDietPlan.getCreatedBy().getUsername();
-        diets = customDietPlan.getDiets().stream().map((diet) -> new DietSummaryDTO(diet)).toList();
+        diets = !customDietPlan.getDiets().isEmpty() ? customDietPlan.getDiets().stream().map((diet) -> new DietSummaryDTO(diet)).toList() : null;
     }
 
     public double getId() { return id; }

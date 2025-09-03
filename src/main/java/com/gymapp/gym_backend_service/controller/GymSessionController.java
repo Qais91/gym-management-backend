@@ -1,10 +1,7 @@
 package com.gymapp.gym_backend_service.controller;
 
 import com.gymapp.gym_backend_service.authorization.JWTHandler;
-import com.gymapp.gym_backend_service.data.model.GymSession;
-import com.gymapp.gym_backend_service.data.model.Member;
-import com.gymapp.gym_backend_service.data.model.Trainer;
-import com.gymapp.gym_backend_service.data.model.User;
+import com.gymapp.gym_backend_service.data.model.*;
 import com.gymapp.gym_backend_service.data.dto.request.GymSessionRequest;
 import com.gymapp.gym_backend_service.data.dto.response.ApiResponse;
 import com.gymapp.gym_backend_service.data.dto.response.gym_session.CreateGymSessionResponseDTO;
@@ -48,23 +45,18 @@ public class GymSessionController {
 
     @PreAuthorize("hasRole('MEMBER')")
     @GetMapping
-    public ResponseEntity<?> getAllSessions() {
-        List<GymSession> allSessions = gymSessionRepository.findAll();
+    public ResponseEntity<?> getAllSessions(@RequestHeader("Authorization") String header) {
+        Long memberID = getMemberID(header);
+        if(memberID == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse("error", "Invalid token. Kindly check it."));
+
+        Optional<Member> member = memberRepository.findById(memberID);
+        if(member.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse("error", "Unable to proceed with session. No active membership"));
+
+        List<GymSession> allSessions = gymSessionRepository.findByMemberId(memberID);
         if(allSessions.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse("error", "No session so far"));
         }
         return ResponseEntity.ok(allSessions.stream().map((session -> new SessionResponseDTO(session))).toList());
-    }
-
-    @PreAuthorize("hasRole('MEMBER')")
-    @GetMapping("/user/{id}")
-    public ResponseEntity<?> getSessionByUser(@PathVariable("id") Long id) {
-        List<GymSession> sessionFilteredByMember = gymSessionRepository.findByMember((Member) userRepository.findById(id).get());
-        if(sessionFilteredByMember.isEmpty()) {
-            return ResponseEntity.badRequest().body(new ApiResponse("error", "Enter a valid member ID"));
-        }
-
-        return ResponseEntity.ok(sessionFilteredByMember.stream().map((gymSession -> new SessionResponseDTO(gymSession))).toList());
     }
 
     @PreAuthorize("hasRole('MEMBER')")

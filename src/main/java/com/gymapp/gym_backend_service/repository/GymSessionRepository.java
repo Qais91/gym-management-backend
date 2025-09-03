@@ -11,4 +11,5 @@ import java.util.List;
 public interface GymSessionRepository extends JpaRepository<GymSession, Long> {
     List<GymSession> findByMember(Member member);
     List<GymSession> findByTrainer(Trainer trainer);
+    List<GymSession> findByMemberId(Long memberId);
 }

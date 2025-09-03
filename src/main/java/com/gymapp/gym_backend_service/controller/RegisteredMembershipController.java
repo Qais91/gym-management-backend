@@ -2,7 +2,6 @@ package com.gymapp.gym_backend_service.controller;
 
 import com.gymapp.gym_backend_service.authorization.JWTHandler;
 import com.gymapp.gym_backend_service.data.model.*;
-import com.gymapp.gym_backend_service.model.*;
 import com.gymapp.gym_backend_service.data.dto.request.register_membership.AssignCustomDietRequest;
 import com.gymapp.gym_backend_service.data.dto.request.register_membership.AssignValidatorRequest;
 import com.gymapp.gym_backend_service.data.dto.response.ApiResponse;
@@ -11,6 +10,8 @@ import com.gymapp.gym_backend_service.data.enums.UserRole;
 import com.gymapp.gym_backend_service.repository.*;
 import com.gymapp.gym_backend_service.data.dto.response.registered_membership.RegisteredMembershipInfoResponseDTO;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -27,6 +28,7 @@ import java.util.Optional;
 @RequestMapping("/api/register-membership")
 public class RegisteredMembershipController {
 
+    private static final Logger log = LoggerFactory.getLogger(RegisteredMembershipController.class);
     @Autowired
     private RegisteredMembershipsRepository registrationRepo;
     @Autowired
@@ -40,8 +42,6 @@ public class RegisteredMembershipController {
     @Autowired
     private InvoiceDetailRepository invoiceDetailRepository;
     @Autowired
-    private RegisteredMembershipsRepository registeredMembershipsRepository;
-    @Autowired
     private UserRepository userRepo;
     @Autowired
     private JWTHandler jwtHandler;
@@ -51,8 +51,7 @@ public class RegisteredMembershipController {
     String URL = "http://localhost:8080/";
 
     boolean isMemberActive(Member member) {
-        Optional<RegisteredMembership> memReg = registeredMembershipsRepository.findByIdAndEndDateAfter(member.getId(), LocalDate.now());
-        return !memReg.isEmpty();
+        return registrationRepo.isMemberShipActive(member.getId());
     }
 
     Long getMemberID(String header) {
@@ -70,18 +69,28 @@ public class RegisteredMembershipController {
         Member member = memberRepo.findById(memberID).orElse(null);
         Membership membership = membershipRepo.findById(membershipId).orElse(null);
 
+        System.out.println("-------------->>>> "+ member.getName());
+        System.out.println(isMemberActive(member));
+
         if(isMemberActive(member)) { return ResponseEntity.badRequest().body(new ApiResponse("error", "Unable to register. This Member has already registered")); }
 
         if(membership == null) { return ResponseEntity.badRequest().body(new ApiResponse("error", "Invalid membership ID. Membership doesn't exist")); }
+
+        List<RegisteredMembership> prevRegMemberShip = registrationRepo.findPendingRegisteredMemberShip(memberID);
+
+        if(!prevRegMemberShip.isEmpty()) return ResponseEntity.badRequest().body(new ApiResponse("error", "Unable to register membership. There are membership that are not processed. Deny those to continue with new Membership registration"));
 
         String fileName = null;
 
         RegisteredMembership registration = new RegisteredMembership();
         registration.setMemeber(member);
         registration.setMembership(membership);
-//        registration.setStartDate(LocalDate.now());
-//        registration.setEndDate(LocalDate.now().plusMonths(membership.getDurationInMonths()));
         registration.setActive(true);
+
+//        System.out.println("===========================");
+//        System.out.println(medicalDocument != null);
+//        System.out.println(!medicalDocument.isEmpty());
+//        System.out.println("===========================");
 
         try {
             if (membership.getMedicalValidationRequired()) {
@@ -100,7 +109,7 @@ public class RegisteredMembershipController {
             } else if (medicalDocument != null && !medicalDocument.isEmpty()) {
                 return ResponseEntity.badRequest().body(new ApiResponse("error", "This membership don't need document to uplaod"));
             } else {
-                registration.setStatus(RegistrationStatus.REGISTERED);
+                registration.setStatus(RegistrationStatus.PENDING);
                 RegisteredMembership regMemberships = registrationRepo.save(registration);
                 var invoice = invoiceDetailRepository.save(new InvoiceDetail(regMemberships));
                 return ResponseEntity.ok(new ApiResponse("sucess", "MemberShip Registered. Invoice generated ID: "+invoice.getId()));
@@ -122,6 +131,10 @@ public class RegisteredMembershipController {
         Optional<Trainer> validatorTrainer = trainerRepository.findById(request.getTrainerID());
 
         if (regMembership.isEmpty()) { return ResponseEntity.badRequest().body(new ApiResponse("error", "Membership registered Not found")); }
+
+        if (!regMembership.get().getMembership().getMedicalValidationRequired()) { return ResponseEntity.badRequest().body(new ApiResponse("error", "This membership doesn't require validator")); }
+        if (regMembership.get().getStatus() != RegistrationStatus.APPLIED) { return ResponseEntity.badRequest().body(new ApiResponse("error", "Unable to assign trainer to this membership")); }
+
         if (validatorTrainer.isEmpty()) { return ResponseEntity.badRequest().body(new ApiResponse("error", "Trainer Not found")); }
 
         regMembership.get().setValidator(validatorTrainer.get());
@@ -148,22 +161,30 @@ public class RegisteredMembershipController {
 
     @PreAuthorize("hasRole('MEMBER')")
     @PutMapping("/register/{regMemId}")
-    public ResponseEntity<?> registeredMemberShip(@PathVariable("regMemId") Long regMemId) {
+    public ResponseEntity<?> registeredMemberShip(@RequestHeader("Authorization") String header, @PathVariable("regMemId") Long regMemId) {
+        Long memberID = getMemberID(header);
         Optional<RegisteredMembership> registeredMembership = registrationRepo.findById(regMemId);
+
+        if(memberID == null) { return ResponseEntity.badRequest().body(new ApiResponse("error", "Invalid token. Kindly check token")); }
+        Member member = memberRepo.findById(memberID).orElse(null);
+
         if (registeredMembership.isEmpty()) {
             return ResponseEntity.status(404).body(new ApiResponse("error", "Invalid Membership ID"));
         }
 
-        if(registeredMembership.get().getStatus() == RegistrationStatus.REGISTERED) {
-            return ResponseEntity.badRequest().body(new ApiResponse("error", "Registration is already done for this membership"));
-        }
+        if(!registeredMembership.get().getMember().equals(member)) return ResponseEntity.badRequest().body(new ApiResponse("error",
+                "This user unauthorized to register this membership"));
+
+        if(registeredMembership.get().getStatus() == RegistrationStatus.REGISTERED) return ResponseEntity.badRequest().body(new ApiResponse("error", "Registration is already done for this membership. Unable to register"));
+
+        if(registeredMembership.get().getStatus() == RegistrationStatus.PENDING) return ResponseEntity.badRequest().body(new ApiResponse("error", "Unable to register this membership. Awaiting for payment"));
 
         if(registeredMembership.get().getStatus() != RegistrationStatus.REVIEWED && registeredMembership.get().getMembership().getMedicalValidationRequired()) {
             return ResponseEntity.badRequest().body(new ApiResponse("error", "This membership need validation can't register without validation"));
         }
 
         var invoice = invoiceDetailRepository.save(new InvoiceDetail(registeredMembership.get()));
-        registeredMembership.get().setStatus(RegistrationStatus.REGISTERED);
+        registeredMembership.get().setStatus(RegistrationStatus.PENDING);
         registrationRepo.save(registeredMembership.get());
         return ResponseEntity.ok(new ApiResponse("success", "MemberShip Registered. Invoice generated ID: "+invoice.getId()));
     }
@@ -195,14 +216,20 @@ public class RegisteredMembershipController {
         return ResponseEntity.ok(new RegisteredMembershipInfoResponseDTO(registeredMembership.get()));
     }
 
-    @PreAuthorize("hasRole('MEMBER')")
-    @GetMapping("/member")
-    public ResponseEntity<?> getMemberMembershipInfo(@RequestHeader("Authorization") String header) {
-        Long memberId = getMemberID(header);
-        if(memberId == null) { return ResponseEntity.badRequest().body(new ApiResponse("error", "Invalid token. Kindly check token")); }
+    @PreAuthorize("hasAnyRole('ADMIN', 'MEMBER')")
+    @GetMapping({"/member/{memberId}", "/member"})
+    public ResponseEntity<?> getMemberMembershipInfo(@RequestHeader("Authorization") String header, @PathVariable(value = "memberId", required = false) Long memberID) {
+        Long userId = getMemberID(header);
+        if(userId == null) { return ResponseEntity.badRequest().body(new ApiResponse("error", "Invalid token. Kindly check token")); }
 
-        List<RegisteredMembership> registrations = registrationRepo.findByMemberId(memberId);
-         Member member = memberRepo.findById(memberId).get();
+        User requestedUser = userRepo.findById(userId).orElse(null);
+        if(requestedUser.getUserRole() == UserRole.ADMIN) { userId = memberID; }
+
+        List<RegisteredMembership> registrations = registrationRepo.findByMemberId(userId);
+        Optional<Member> _member = memberRepo.findById(userId);
+
+        if (_member.isEmpty()) { return ResponseEntity.status(404).body(new ApiResponse("error", "Invalid Member. No valid Member found")); }
+        Member member = _member.get();
 
         if (registrations.isEmpty()) {
             return ResponseEntity.status(404).body(new ApiResponse("error", "No Membership registered for : " + member.getName()));
@@ -224,17 +251,15 @@ public class RegisteredMembershipController {
         Long trainerId = userId;
 
         if(userId == null) { return ResponseEntity.status(404).body(new ApiResponse("error", "Invalid token. Kindly check token")); }
-        System.out.print("---->> USER " + userId);
 
         User requestedUser = userRepo.findById(userId).orElse(null);
         if(requestedUser.getUserRole() == UserRole.ADMIN) { trainerId = trainerID; }
-        System.out.print("---->> USER IS NOT ADMIN");
 
         List<RegisteredMembership> registrations = registrationRepo.findByValidatorId(trainerId);
         Trainer trainer = trainerRepository.findById(trainerId).orElse(null);
 
         if (trainer == null) { return ResponseEntity.status(404).body(new ApiResponse("error", "Invalid Trainer. No valid trainer found")); }
-        if (registrations.isEmpty()) { return ResponseEntity.status(404).body(new ApiResponse("error", "No Membership Assigned for : " + trainer.getName())); }
+        if (registrations.isEmpty()) { return ResponseEntity.status(404).body(new ApiResponse("error", "No Validation Assigned for : " + trainer.getName())); }
 
         List<RegisteredMembershipInfoResponseDTO> result = registrations.stream().map((reg) -> {
             RegisteredMembershipInfoResponseDTO regMemDTO = new RegisteredMembershipInfoResponseDTO(reg);
@@ -246,15 +271,18 @@ public class RegisteredMembershipController {
     }
 
     @PreAuthorize("hasRole('MEMBER')")
-    @DeleteMapping
-    public ResponseEntity<?> cancelRegistration(@RequestHeader("Authorization") String header) {
+    @DeleteMapping("/{regMemID}")
+    public ResponseEntity<?> cancelRegistration(@RequestHeader("Authorization") String header, @PathVariable("regMemID") Long regMemID) {
         Long id = getMemberID(header);
 
         if(id == null) { return ResponseEntity.status(404).body(new ApiResponse("error", "Invalid token. Kindly check token")); }
 
-        return registrationRepo.findById(id).map(reg -> {
-            reg.setActive(false);
-            return ResponseEntity.ok(registrationRepo.save(reg));
-        }).orElse(ResponseEntity.notFound().build());
+        Optional<RegisteredMembership> regMem = registrationRepo.findById(regMemID);
+        if (regMem.isEmpty()) { return ResponseEntity.status(404).body(new ApiResponse("error", "Invalid Membership ID")); }
+
+        if(regMem.get().getStatus() == RegistrationStatus.REGISTERED) regMem.get().setStatus(RegistrationStatus.INACTIVE);
+        else  regMem.get().setStatus(RegistrationStatus.DENIED);
+
+        return ResponseEntity.ok(new RegisteredMembershipInfoResponseDTO(registrationRepo.save(regMem.get())));
     }
 }

@@ -13,12 +13,15 @@ import com.gymapp.gym_backend_service.data.dto.response.gym_session.SessionRespo
 import com.gymapp.gym_backend_service.data.enums.ActivityType;
 import com.gymapp.gym_backend_service.data.enums.UserRole;
 import com.gymapp.gym_backend_service.repository.*;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -33,6 +36,8 @@ public class GymSessionController {
     private UserRepository userRepository;
     @Autowired
     private MemberRepository memberRepository;
+    @Autowired
+    private RegisteredMembershipsRepository registeredMembershipsRepository;
     @Autowired
     private JWTHandler jwtHandler;
 
@@ -83,22 +88,19 @@ public class GymSessionController {
 
     @PreAuthorize("hasRole('MEMBER')")
     @PostMapping
-    public ResponseEntity<?> createGymSession(@RequestHeader("Authorization") String header, @RequestBody GymSessionRequest request) {
+    public ResponseEntity<?> createGymSession(@RequestHeader("Authorization") String header, @Valid @RequestBody GymSessionRequest request) {
         Long memberID = getMemberID(header);
         if(memberID == null) { return ResponseEntity.badRequest().body(new ApiResponse("error", "Invalid token. Kindly check token")); }
 
-        Optional<User> trainerOpt = userRepository.findById(request.getTrainerId());
-        if (trainerOpt.isEmpty() || !UserRole.TRAINER.equals(trainerOpt.get().getUserRole())) {
-            return ResponseEntity.badRequest().body(new ApiResponse("error", "Invalid trainer ID or user is not a trainer."));
-        }
+
         Optional<User> memberOpt = userRepository.findById(memberID);
         if (memberOpt.isEmpty() || !UserRole.MEMBER.equals(memberOpt.get().getUserRole())) {
             return ResponseEntity.badRequest().body(new ApiResponse("error", "Invalid member ID or user is not a member."));
         }
 
-        if (!memberRepository.findById(memberOpt.get().getId()).get().getTrainer().getId().equals(trainerOpt.get().getId())) {
-            return ResponseEntity.badRequest().body(new ApiResponse("error", "Invalid trainer is been assigned"));
-        }
+        Trainer trainer = memberRepository.findById(memberOpt.get().getId()).get().getTrainer();
+
+        if(!registeredMembershipsRepository.isMemberShipActive(memberID)) return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse("error", "Unable to proceed with session. No active membership"));
 
         ActivityType activityType;
         try {
@@ -108,13 +110,22 @@ public class GymSessionController {
             return ResponseEntity.badRequest().body(new ApiResponse("error", "Invalid Activity Type. Allowed values are: " + allowedActivity));
         }
 
+        LocalDate _startTime = LocalDate.now();
+        LocalDateTime startTime = _startTime.atTime(request.getStartTime());
+
+        LocalDate _endTime = LocalDate.now();
+        LocalDateTime endTime = _endTime.atTime(request.getEndTime());
+
+        if(startTime.isAfter(endTime)) return ResponseEntity.badRequest().body(new ApiResponse("error", "Invalid Start time and End time"));
+
         GymSession session = new GymSession();
-        session.setTrainer((Trainer) trainerOpt.get());
+        session.setTrainer(trainer);
         session.setMember((Member) memberOpt.get());
+        session.setCaloriesBurned(request.getCaloriesBurned());
         session.setNotes(request.getNotes());
         session.setActivityType(activityType);
-        session.setStartTime(request.getStartTime());
-        session.setEndTime(request.getEndTime());
+        session.setStartTime(startTime);
+        session.setEndTime(endTime);
 
         GymSession savedSession = gymSessionRepository.save(session);
         return ResponseEntity.ok(new CreateGymSessionResponseDTO(savedSession));

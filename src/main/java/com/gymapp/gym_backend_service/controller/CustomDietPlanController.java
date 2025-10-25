@@ -13,6 +13,8 @@ import com.gymapp.gym_backend_service.data.dto.response.custom_diet_plan.DietPla
 import com.gymapp.gym_backend_service.repository.CustomDietPlanRepository;
 import com.gymapp.gym_backend_service.repository.DietsRepository;
 import com.gymapp.gym_backend_service.repository.TrainerRepository;
+import com.gymapp.gym_backend_service.service.CustomDietPlanService;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
@@ -27,132 +29,59 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/diet-plans")
 public class CustomDietPlanController {
-    @Autowired
-    private CustomDietPlanRepository customDietPlanRepository;
-    @Autowired
-    private DietsRepository dietsRepository;
-    @Autowired
-    private TrainerRepository trainerRepository;
-    @Autowired
-    private JWTHandler jwtHandler;
 
-    Long getMemberID(String header) {
-        String token = header.substring(7);
-        return jwtHandler.extractUserId(token);
-    }
+    @Autowired
+    private CustomDietPlanService service;
 
     @PreAuthorize("hasRole('TRAINER')")
     @GetMapping("/trainer/{trainerId}")
     public ResponseEntity<?> getPlansByMember(@RequestHeader("Authorization") String header) {
-        Long validatorId = getMemberID(header);
-        List<CustomDietPlan> plans = customDietPlanRepository.findByCreatedById(validatorId);
-        Optional<Trainer> trainer = trainerRepository.findById(validatorId);
-
-        if(trainer.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse("error", "Not valid trainer id"));
-        if(plans.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse("error", "No Diet Plans so far"));
-
-        List<DietPlanResponseDTO> result = plans.stream().map((dietPlan) -> new DietPlanResponseDTO(dietPlan)).toList();
-        return ResponseEntity.ok(result);
+        try {
+            return ResponseEntity.ok(service.getAssignedDietPlan(header));
+        } catch (EntityNotFoundException e) {
+            String err_msg = e.getMessage();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse("error", err_msg));
+        }
     }
 
     @PreAuthorize("hasRole('TRAINER')")
     @GetMapping
     public ResponseEntity<List<DietPlanResponseDTO>> getAllDietPlans() {
-        List<CustomDietPlan> customDietPlans = customDietPlanRepository.findAll();
-
-        List<DietPlanResponseDTO> result = customDietPlans.stream().map((dietPlan) -> new DietPlanResponseDTO(dietPlan)).toList();
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(service.getAllDietPlan());
     }
 
     @PreAuthorize("hasRole('TRAINER')")
     @PostMapping
     public ResponseEntity<?> createCustomDietPlan(@RequestHeader("Authorization") String header, @Valid @RequestBody CreateDietPlanRequestDTO request) {
-        Long trainerId = getMemberID(header);
-        Optional<Trainer> trainerOpt = trainerRepository.findById(trainerId);
-        List<Diets> assignedDiets = (request.getDietsList() != null) ? request.getDietsList().stream().map(idVal -> {
-           Optional<Diets> assignedDiet = dietsRepository.findById(Long.valueOf(idVal));
-            return assignedDiet.orElse(null);
-        }).toList() : null;
-
-//        System.out.println("assignedDiets :: ");
-//        System.out.println(assignedDiets);
-
-        if (trainerOpt.isEmpty()) {
-            return ResponseEntity.badRequest().body(new ApiResponse("error", "Invalid Trainer ID"));
+        try {
+            return ResponseEntity.ok(new DietPlanResponseDTO(service.createCustomDietPlan(header, request)));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ApiResponse("error", e.getMessage()));
         }
-
-        CustomDietPlan plan = new CustomDietPlan();
-        plan.setTitle(request.getTitle());
-        plan.setCreatedBy(trainerOpt.get());
-        if(assignedDiets != null) {
-            if (assignedDiets.stream().anyMatch(Objects::isNull)) return ResponseEntity.badRequest().body(new ApiResponse("error", "One of diet is invalid. Enter valid diets list"));
-            plan.setDiets(assignedDiets);
-        }
-
-        CustomDietPlan savedPlan = customDietPlanRepository.save(plan);
-        return ResponseEntity.ok(new DietPlanResponseDTO(savedPlan));
     }
 
     @PreAuthorize("hasRole('TRAINER')")
     @PostMapping("/assign-diets")
     public ResponseEntity<?> assignDietsToPlan(@Valid @RequestBody DietAssignmentRequestDTO request) {
-        Optional<CustomDietPlan> planOpt = customDietPlanRepository.findById(request.getDietPlanId());
-        if (planOpt.isEmpty()) {
-            return ResponseEntity.badRequest().body(new ApiResponse("error", "Diet Plan not found"));
+        try {
+            service.assignDietToPlan(request);
+            return ResponseEntity.ok(new ApiResponse("success", "Diets assigned successfully"));
+        } catch (EntityNotFoundException e) {
+            String err_msg = e.getMessage();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse("error", err_msg));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ApiResponse("error", e.getMessage()));
         }
-
-        CustomDietPlan plan = planOpt.get();
-        List<Diets> dietsToAssign = dietsRepository.findAllById(request.getDietsId());
-
-        if (dietsToAssign.isEmpty()) { return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse("error", "Diets not found enter valid diet ID")); }
-
-        plan.setDiets(dietsToAssign);
-
-        customDietPlanRepository.save(plan);
-        return ResponseEntity.ok(new ApiResponse("success", "Diets assigned successfully"));
     }
 
     @PreAuthorize("hasRole('TRAINER')")
     @PutMapping("/update-diet")
     public ResponseEntity<?> updateDietPlan(@Valid @RequestBody UpdateDietPlanRequestDTO request) {
-        Optional<CustomDietPlan> planOpt = customDietPlanRepository.findById(request.getDietPlanId());
-        if (planOpt.isEmpty()) {
-            return ResponseEntity.badRequest().body("Diet Plan not found");
+        try {
+            return ResponseEntity.ok(service.updateDietPlan(request));
+        } catch (EntityNotFoundException e) {
+            String err_msg = e.getMessage();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse("error", err_msg));
         }
-
-        CustomDietPlan plan = planOpt.get();
-
-        if (request.getNewTitle() != null && !request.getNewTitle().isBlank()) {
-            plan.setTitle(request.getNewTitle());
-        }
-
-        if (request.getDietIdsToAdd() != null && !request.getDietIdsToAdd().isEmpty()) {
-            List<Diets> dietsToAdd = dietsRepository.findAllById(request.getDietIdsToAdd());
-            plan.getDiets().addAll(dietsToAdd);
-        }
-
-        if (request.getDietIdsToRemove() != null && !request.getDietIdsToRemove().isEmpty()) {
-            plan.getDiets().removeIf(d -> request.getDietIdsToRemove().contains(d.getId()));
-        }
-
-        CustomDietPlan updatedPlan = customDietPlanRepository.save(plan);
-
-        CustomDietPlanResponseDTO responseDTO = new CustomDietPlanResponseDTO();
-        responseDTO.setId(updatedPlan.getId());
-        responseDTO.setTitle(updatedPlan.getTitle());
-        responseDTO.setCreatedBy(updatedPlan.getCreatedBy().getName());
-
-        List<DietSummaryDTO> dietSummaries = updatedPlan.getDiets().stream().map(d -> {
-            DietSummaryDTO dto = new DietSummaryDTO();
-            dto.setId(d.getId());
-            dto.setMealType((d.getMealType() != null) ? d.getMealType().name() : "-");
-            dto.setFoodItem(d.getFoodItem());
-            dto.setCalories(d.getCalories());
-            return dto;
-        }).toList();
-
-        responseDTO.setDiets(dietSummaries);
-
-        return ResponseEntity.ok(responseDTO);
     }
 }

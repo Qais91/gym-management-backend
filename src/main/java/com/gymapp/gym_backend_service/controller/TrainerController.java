@@ -9,6 +9,8 @@ import com.gymapp.gym_backend_service.data.dto.response.UserResponse;
 import com.gymapp.gym_backend_service.data.enums.UserRole;
 import com.gymapp.gym_backend_service.repository.TrainerRepository;
 import com.gymapp.gym_backend_service.repository.UserRepository;
+import com.gymapp.gym_backend_service.service.TrainerService;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -26,59 +28,33 @@ import java.util.Optional;
 public class TrainerController {
 
     @Autowired
-    private TrainerRepository trainerRepository;
-    @Autowired
-    private UserRepository userRepository;
+    private TrainerService service;
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<?> addTrainer(@Valid @RequestBody CreateTrainerRequestDTO requestDTO) {
-        if (userRepository.existsByUsername(requestDTO.getUsername())) {
-            return ResponseEntity.badRequest().body(new ApiResponse("error", "Username already exists"));
-        }
-        if(userRepository.existsByEmail(requestDTO.getEmail())) {
-            return ResponseEntity.badRequest().body(new ApiResponse("error", "Email already exists"));
-        }
-        if(userRepository.existsByPhoneNumber(requestDTO.getPhoneNumber())) {
-            return ResponseEntity.badRequest().body(new ApiResponse("error", "Number already exists"));
-        }
-
-        ActivityType activityType;
         try {
-            activityType = ActivityType.valueOf(requestDTO.getSpecialization().toUpperCase());
+            return ResponseEntity.ok(new TrainerInfoResponseDTO(service.createTrainer(requestDTO)));
         } catch (Exception e) {
-            String allowedActivity = String.join(", ",  Arrays.stream(ActivityType.values()).map(Enum::name).toList());
-            return ResponseEntity.badRequest().body(new ApiResponse("error", "Invalid Specialization Type. Allowed values are: " + allowedActivity));
+            String err_msg = e.getMessage();
+            return ResponseEntity.badRequest().body(new ApiResponse("false", err_msg));
         }
-
-        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-        Trainer trainer = new Trainer(requestDTO);
-        trainer.setPassword(encoder.encode(requestDTO.getPassword()));
-        trainer.setSpecialization(activityType.toString());
-
-        return ResponseEntity.ok(new TrainerInfoResponseDTO(trainerRepository.save(trainer)));
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'TRAINER', 'MEMBER')")
     @GetMapping("/{id}")
     public ResponseEntity<?> getTrainerById(@PathVariable(value = "id") Long id) {
-        Optional<Trainer> trainer = trainerRepository.findById(id);
-        if(trainer.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new ApiResponse("error", "No Trainer associated with this ID"));
+        try {
+            return ResponseEntity.ok(new TrainerInfoResponseDTO(service.getTrainerById(id)));
+        } catch (EntityNotFoundException e) {
+            String err_msg = e.getMessage();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse("error", err_msg));
         }
-
-        return ResponseEntity.ok(new TrainerInfoResponseDTO(trainer.get()));
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'TRAINER', 'MEMBER')")
     @GetMapping
     public ResponseEntity<List<UserResponse>> getAllTrainer() {
-        return ResponseEntity.ok(
-            userRepository.findByUserRole(UserRole.TRAINER)
-                .stream()
-                .map((user) -> new UserResponse(user))
-                .toList()
-        );
+        return ResponseEntity.ok(service.getAllTrainer());
     }
 }

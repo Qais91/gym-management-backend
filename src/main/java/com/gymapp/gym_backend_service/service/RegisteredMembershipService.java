@@ -3,16 +3,13 @@ package com.gymapp.gym_backend_service.service;
 import com.gymapp.gym_backend_service.authorization.JWTHandler;
 import com.gymapp.gym_backend_service.data.dto.request.register_membership.AssignCustomDietRequest;
 import com.gymapp.gym_backend_service.data.dto.request.register_membership.AssignValidatorRequest;
-import com.gymapp.gym_backend_service.data.dto.response.ApiResponse;
 import com.gymapp.gym_backend_service.data.dto.response.registered_membership.RegisteredMembershipInfoResponseDTO;
 import com.gymapp.gym_backend_service.data.enums.RegistrationStatus;
 import com.gymapp.gym_backend_service.data.enums.UserRole;
 import com.gymapp.gym_backend_service.data.model.*;
 import com.gymapp.gym_backend_service.repository.*;
 import jakarta.persistence.EntityNotFoundException;
-import org.hibernate.query.sqm.EntityTypeException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -66,7 +63,7 @@ public class RegisteredMembershipService {
         String fileName = null;
 
         RegisteredMembership registration = new RegisteredMembership();
-        registration.setMemeber(member);
+        registration.setMember(member);
         registration.setMembership(membership);
         registration.setActive(true);
 
@@ -106,8 +103,8 @@ public class RegisteredMembershipService {
 
         if (regMembership.isEmpty()) { throw new EntityNotFoundException("Membership registered Not found"); }
 
+        if (regMembership.get().getStatus() != RegistrationStatus.APPLIED) { throw new IllegalArgumentException("Membership not registered. Unable to assign validator to this membership"); }
         if (!regMembership.get().getMembership().getMedicalValidationRequired()) { throw new IllegalArgumentException("This membership doesn't require validator"); }
-        if (regMembership.get().getStatus() != RegistrationStatus.APPLIED) { throw new IllegalArgumentException("Unable to assign trainer to this membership"); }
 
         if (validatorTrainer.isEmpty()) { throw new EntityNotFoundException("Trainer Not found"); }
 
@@ -134,15 +131,15 @@ public class RegisteredMembershipService {
         if(memberID == null) { throw new IllegalArgumentException("Invalid token. Kindly check token"); }
         Member member = memberRepo.findById(memberID).orElse(null);
 
-        if (registeredMembership.isEmpty()) { throw new EntityNotFoundException("Invalid Membership ID"); }
-
+        if (registeredMembership.isEmpty()) throw new EntityNotFoundException("Invalid Membership ID");
         if(!registeredMembership.get().getMember().equals(member)) throw new IllegalArgumentException("This user unauthorized to register this membership");
 
-        if(registeredMembership.get().getStatus() == RegistrationStatus.REGISTERED) throw new IllegalArgumentException("Registration is already done for this membership. Unable to register");
+        if(registeredMembership.get().getStatus() == RegistrationStatus.REGISTERED) throw new IllegalArgumentException("Registration is already done for this membership. Unable to register again");
         if(registeredMembership.get().getStatus() == RegistrationStatus.PENDING) throw new IllegalArgumentException("Unable to register this membership. Awaiting for payment");
         if(registeredMembership.get().getStatus() != RegistrationStatus.REVIEWED && registeredMembership.get().getMembership().getMedicalValidationRequired()) {
             throw new IllegalArgumentException("This membership need validation can't register without validation");
         }
+        if(registeredMembership.get().getStatus() != RegistrationStatus.REVIEWED) throw new IllegalArgumentException("Unable to proceed register this membership. Error occurred.");
 
         var invoice = invoiceDetailRepository.save(new InvoiceDetail(registeredMembership.get()));
         registeredMembership.get().setStatus(RegistrationStatus.PENDING);

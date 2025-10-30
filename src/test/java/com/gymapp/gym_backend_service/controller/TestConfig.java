@@ -1,11 +1,7 @@
 package com.gymapp.gym_backend_service.controller;
 
-import com.gymapp.gym_backend_service.data.dto.request.CreateUserRequestDTO;
-import com.gymapp.gym_backend_service.data.dto.request.member.CreateMemberRequestDTO;
 import com.gymapp.gym_backend_service.data.enums.DietMealType;
-import com.gymapp.gym_backend_service.data.model.Diets;
-import com.gymapp.gym_backend_service.data.model.Trainer;
-import com.gymapp.gym_backend_service.data.model.User;
+import com.gymapp.gym_backend_service.data.model.*;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -19,7 +15,7 @@ public class TestConfig {
             "admin_pass"
     );
 
-    public User test_member = new User(
+    public Member test_member = new Member(
             "test_user",
             "test user",
             "test_user@mail.com",
@@ -37,12 +33,48 @@ public class TestConfig {
             3
     );
 
-    public Diets test_diet = new Diets(
+    public Diets test_diet1 = new Diets(
             "test meal",
             DietMealType.BREAKFAST,
             200,
             50
     );
+
+    public Diets test_diet2 = new Diets(
+            "test meal",
+            DietMealType.BREAKFAST,
+            200,
+            50
+    );
+
+    public Membership test_regular = new Membership(
+            "Regular Plan",
+            1,
+            800,
+            false,
+            false
+    );
+
+    public Membership test_premium = new Membership(
+            "Premium Plan",
+            1,
+            1500,
+            true,
+            false
+    );
+
+    public Membership test_elite = new Membership(
+            "Premium Plan",
+            1,
+            1500,
+            true,
+            true
+    );
+
+    public TestConfig() {
+        test_diet1.setId(1L);
+        test_diet2.setId(2L);
+    }
 
     public void setLoginToken(String token) {
         loginToken = token;

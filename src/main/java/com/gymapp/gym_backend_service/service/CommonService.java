@@ -4,7 +4,9 @@ import com.gymapp.gym_backend_service.authorization.JWTHandler;
 import com.gymapp.gym_backend_service.data.model.Member;
 import com.gymapp.gym_backend_service.repository.RegisteredMembershipsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
+@Service
 public class CommonService {
     @Autowired
     private JWTHandler jwtHandler;
@@ -12,12 +14,16 @@ public class CommonService {
     @Autowired
     private RegisteredMembershipsRepository registrationRepo;
 
-    Long getMemberID(String header) {
-        String token = header.substring(7);
-        return jwtHandler.extractUserId(token);
+    public Long getMemberID(String header) {
+        try{
+            String token = header.substring(7);
+            return jwtHandler.extractUserId(token);
+        } catch(Exception e) {
+            return null;
+        }
     }
 
-    boolean isMemberActive(Member member) {
+    public boolean isMemberActive(Member member) {
         return registrationRepo.isMemberShipActive(member.getId());
     }
 

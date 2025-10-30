@@ -1,5 +1,6 @@
 package com.gymapp.gym_backend_service.controller;
 
+import com.gymapp.gym_backend_service.data.dto.response.ApiResponse;
 import com.gymapp.gym_backend_service.data.model.User;
 import com.gymapp.gym_backend_service.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,10 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody User loginRequest) {
-        return service.authenticateUser(loginRequest);
+        try {
+            return ResponseEntity.ok(service.authenticateUser(loginRequest));
+        } catch (Exception e) {
+            return ResponseEntity.status(401).body(new ApiResponse("error", e.getMessage()));
+        }
     }
 }

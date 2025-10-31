@@ -14,11 +14,15 @@ public class CreateDietRequestDTO {
     private Integer price;
     public String mealType;
 
+    public void setMealType(String mealType) { this.mealType = mealType; }
     public String getMealType() { return mealType; }
 
+    public void setCalories(Integer calories) { this.calories = calories; }
     public Integer getCalories() { return calories; }
 
+    public void setPrice(Integer price) { this.price = price; }
     public Integer getPrice() { return price; }
 
+    public void setFoodItem(String foodItem) { this.foodItem = foodItem; }
     public String getFoodItem() { return foodItem; }
 }

@@ -41,7 +41,7 @@ public class RegisteredMembership {
     public void setId(Long id) { this.id = id; }
 
     public Member getMember() { return member; }
-    public void setMemeber(Member member) { this.member = member; }
+    public void setMember(Member member) { this.member = member; }
 
     public Membership getMembership() { return membership; }
     public void setMembership(Membership membership) { this.membership = membership; }

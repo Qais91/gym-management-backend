@@ -8,6 +8,11 @@ public class AssignValidatorRequest {
     @NotNull(message = "Trainer ID is required")
     private Long trainerID;
 
+    public AssignValidatorRequest(Long regMemberShipID, Long trainerID) {
+        this.regMemberShipID = regMemberShipID;
+        this.trainerID = trainerID;
+    }
+
     public Long getRegMemberShipID() { return regMemberShipID; }
     public Long getTrainerID() { return trainerID; }
 }
